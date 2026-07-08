@@ -1,6 +1,6 @@
 # Axion Roadmap
 
-## v0.4 App Control And Tasks
+## v0.5 Project Manager
 
 - Identity and personality foundation
 - Improved terminal welcome screen
@@ -13,15 +13,12 @@
 - Browser and folder tools
 - Safe app launcher with allowlisted shortcuts
 - SQLite task manager
-- Open task context for AI chat
+- SQLite project manager
+- Active project and open task context for AI chat
 - Status reporting
 - Basic safety classification
 - Activity logging
 - Built-in fallback responses when the AI Core is unavailable
-
-## v0.5 Project Manager
-
-- Add project records, project tasks, and project status views
 
 ## v0.6 Safe Terminal Commands
 
@@ -36,6 +33,11 @@
 - Add voice input and output experiments
 - Keep text mode fully supported
 
+## v0.9 Browser Automation
+
+- Add browser automation helpers
+- Keep user-visible confirmation for important actions
+
 ## v1.0 AI Operating Layer
 
-- Combine memory, tools, safety, apps, browser, voice, and agents into a reliable personal operating layer
+- Combine memory, projects, tasks, tools, safety, apps, browser, voice, and agents into a reliable personal operating layer

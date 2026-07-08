@@ -1,6 +1,6 @@
 # Axion Architecture
 
-Axion v0.4 is a small, modular Python terminal app. It uses only the Python standard library, keeps the local Ollama AI Core, and adds safe app launching plus local task management.
+Axion v0.5 is a modular Python terminal app that uses only the Python standard library. It keeps the local Ollama AI Core and adds project management on top of memory, notes, tasks, and tools.
 
 ## Core
 
@@ -17,7 +17,7 @@ Important files:
 
 ## AI Core
 
-The AI Core builds the final prompt and asks the local model for a response. It can include recent memories and recent open tasks as context.
+The AI Core builds the final prompt and asks the local model for a response. It can include recent memories, active projects, and open tasks as context.
 
 Important file:
 
@@ -63,6 +63,16 @@ Important file:
 
 - `src/axion/memory/sqlite_memory.py`
 
+## Project Store
+
+Projects use SQLite at `data/axion.db`. Projects are long-term containers for meaningful work. They have names, descriptions, statuses, optional folder paths, and project notes.
+
+Important file:
+
+- `src/axion/projects/project_store.py`
+
+Project statuses are `active`, `paused`, and `done`.
+
 ## Task Store
 
 Tasks use the same SQLite database at `data/axion.db`. The task store keeps open and done tasks in Axion's own `tasks` table. Deleting a task only removes a row from this table; it never deletes files.
@@ -71,9 +81,21 @@ Important file:
 
 - `src/axion/tasks/task_store.py`
 
+## Projects, Tasks, Notes, And AI
+
+Projects are long-term containers. Tasks are action items. Project notes are project knowledge. The AI Core uses active project and open task context to answer better when the user asks what to work on next or asks for a plan.
+
+```text
+ACTIVE PROJECTS:
+* Axion: AI Operating System built with Python and Ollama
+
+OPEN TASKS:
+* Push Axion v0.5 to GitHub
+```
+
 ## Tools
 
-Tools are safe, focused helpers that interact with the computer. In v0.4, Axion can open websites, folders, and allowlisted apps.
+Tools are safe, focused helpers that interact with the computer. In v0.5, Axion can open websites, folders, saved project folders, and allowlisted apps.
 
 Important files:
 
@@ -95,14 +117,14 @@ The safety layer classifies future actions as:
 - `needs_confirmation`
 - `blocked`
 
-Dangerous actions are not executed in v0.4. This module exists so future automation has a clear safety checkpoint.
+Dangerous actions are not executed in v0.5. This module exists so future automation has a clear safety checkpoint.
 
 ## Logs
 
 Important actions are logged to `logs/axion.log`. The log folder is created automatically when Axion starts or writes its first log entry.
 
-Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, AI response routing, model changes, and app exit.
+Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, project changes, AI response routing, model changes, and app exit.
 
 ## Future Agents
 
-Future versions can add agents on top of this foundation. Agents should use the command, memory, task, AI Core, tool, safety, and log systems rather than bypassing them.
+Future versions can add agents on top of this foundation. Agents should use the command, project, memory, task, AI Core, tool, safety, and log systems rather than bypassing them.

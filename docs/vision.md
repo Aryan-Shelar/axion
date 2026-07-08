@@ -13,4 +13,4 @@ The long-term vision is a trusted local layer that can:
 - Coordinate multiple AI agents
 - Keep the user in control
 
-Version 0.4 adds safe app launching and task management while preserving the foundation: local AI Core, identity, local memory, command routing, basic tools, safety classification, status reporting, fallback responses, and activity logs.
+Version 0.5 adds project management while preserving the foundation: local AI Core, identity, local memory, tasks, command routing, basic tools, safety classification, status reporting, fallback responses, and activity logs.

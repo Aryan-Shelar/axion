@@ -2,131 +2,88 @@
 
 Axion is a private AI Operating System / AI Operating Layer. The long-term goal is a world-class personal assistant that can think, remember, plan, use tools, and control the computer safely.
 
-Axion v0.4 adds safe app launching and a local task manager while keeping the Ollama AI Core, memory, notes, folders, websites, status, and logs.
+Axion v0.5 adds a Project Manager so Axion can track long-term projects, project notes, project folders, project status, and use active projects as AI context.
 
-## Vision
+## Current v0.5 Features
 
-Axion should become a calm, capable operating layer between the user and the computer. It should help the user think clearly, store useful context, plan work, use safe tools, automate carefully, and coordinate future AI agents.
-
-## Current v0.4 Features
-
-- Terminal welcome screen
-- Interactive command loop
-- Local Ollama AI Core
-- Default model: `llama3.2:1b`
-- Runtime model switching
-- Recent memory and open task context for AI chat
-- Fallback built-in responder when AI Core cannot answer
-- Local SQLite memory database
-- Memory saving, listing, counting, and searching
-- Notes saving, listing, counting, and searching
+- Local Ollama AI Core with default model `llama3.2:1b`
+- Memory and notes
+- Project manager with statuses, folders, and notes
 - Task manager for open and completed tasks
+- Active project and open task context for AI chat
 - Safe app launcher with allowlisted shortcuts
-- Website opening
-- Folder opening with common home-folder shortcuts
-- Status report with AI and task counts
-- Axion identity command
-- Simple safety classification module for future actions
+- Website and folder opening
+- Status report with AI, project, and task counts
 - Activity logging to `logs/axion.log`
 
-## Ollama Setup
-
-Install and start Ollama, then pull the default local model:
+## Run
 
 ```bash
 ollama pull llama3.2:1b
-```
-
-Then run Axion:
-
-```bash
 python -m pip install -e .
 python -m axion
 ```
 
 ## Commands
 
-- `/help` - Show commands
-- `/exit` - Exit Axion
-- `/time` - Show the current local time
-- `/remember <text>` - Save a memory
-- `/memories` - List saved memories
-- `/search-memory <keyword>` - Search saved memories
-- `/note <title> :: <content>` - Save a note
-- `/notes` - List saved notes
-- `/search-notes <keyword>` - Search saved notes
-- `/task add <title>` - Save a task
-- `/tasks` - List all tasks
-- `/tasks open` - List open tasks
-- `/tasks done` - List completed tasks
-- `/task done <id>` - Mark a task done
-- `/task delete <id>` - Delete a task from Axion's task table
-- `/apps` - List available app shortcuts
-- `/app <name>` - Open an allowlisted app
-- `/open <url>` - Open a website
-- `/folder <path>` - Open a folder
-- `/whoami` - Show Axion identity
-- `/status` - Show Axion system status
-- `/ai-status` - Show local AI Core status
-- `/model` - Show the current AI model
-- `/model <name>` - Change the current AI model for this session
-- `/clear` - Clear the terminal screen
-
-App shortcuts:
-
-- `notepad`
-- `calculator`
-- `calc`
-- `chrome`
-- `edge`
-- `vscode`
-- `cmd`
-- `explorer`
-
-Folder shortcuts:
-
-- `desktop`
-- `downloads`
-- `documents`
-- `pictures`
-- `videos`
-- `music`
+- `/help`
+- `/exit`
+- `/time`
+- `/remember <text>`
+- `/memories`
+- `/search-memory <keyword>`
+- `/note <title> :: <content>`
+- `/notes`
+- `/search-notes <keyword>`
+- `/project create <name>`
+- `/project create <name> :: <description>`
+- `/projects`
+- `/projects active`
+- `/projects paused`
+- `/projects done`
+- `/project show <id_or_name>`
+- `/project status <id_or_name> <active|paused|done>`
+- `/project folder <id_or_name> :: <folder_path>`
+- `/project open <id_or_name>`
+- `/project note <id_or_name> :: <note>`
+- `/project notes <id_or_name>`
+- `/task add <title>`
+- `/tasks`
+- `/tasks open`
+- `/tasks done`
+- `/task done <id>`
+- `/task delete <id>`
+- `/apps`
+- `/app <name>`
+- `/open <url>`
+- `/folder <path>`
+- `/whoami`
+- `/status`
+- `/ai-status`
+- `/model`
+- `/model <name>`
+- `/clear`
 
 ## Examples
 
 ```text
-/apps
-/app notepad
-/app calculator
-/task add Build Axion v0.4
-/task add Push Axion to GitHub
-/tasks
-/task done 1
-/tasks open
-/tasks done
+/project create Axion :: AI Operating System built with Python and Ollama
+/projects
+/project show Axion
+/project folder Axion :: D:\Axion
+/project open Axion
+/project note Axion :: Build v0.5 Project Manager
+/project notes Axion
+/task add Push Axion v0.5 to GitHub
 /status
-what should I do next?
+what should I work on next?
 /exit
 ```
 
-## Future Roadmap
+## Roadmap
 
-- v0.5 Project Manager
 - v0.6 Safe Terminal Commands
 - v0.7 File Search
 - v0.8 Voice
-- v1.0 AI Operating Layer
-
-## Project Layout
-
-```text
-.
-|-- README.md
-|-- pyproject.toml
-|-- docs/
-|-- src/
-|   `-- axion/
-|-- data/
-|-- logs/
-`-- tests/
-```
+- v0.9 Browser Automation
+- v1.0 Agent System

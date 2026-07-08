@@ -7,6 +7,7 @@ from axion.core.activity_log import log_activity
 from axion.core.basic_responder import respond_to_chat
 from axion.core.identity import AXION_NAME, AXION_TAGLINE, AXION_VERSION
 from axion.memory.sqlite_memory import SQLiteMemory
+from axion.projects.project_store import ProjectStore
 from axion.tasks.task_store import TaskStore
 from axion.utils.text import divider
 
@@ -41,6 +42,7 @@ class AxionApp:
     def __init__(self) -> None:
         self.memory = SQLiteMemory()
         self.tasks = TaskStore()
+        self.projects = ProjectStore()
         self.ai_core = AICore()
         self.current_model = DEFAULT_MODEL
         self.router = CommandRouter(
@@ -48,6 +50,7 @@ class AxionApp:
             self.ai_core,
             self.current_model,
             self.tasks,
+            self.projects,
         )
         self.running = True
 
@@ -64,6 +67,7 @@ class AxionApp:
         """Start the command loop."""
         self.memory.initialize()
         self.tasks.initialize()
+        self.projects.initialize()
         log_activity("app start")
         self.show_welcome()
 
@@ -100,6 +104,7 @@ class AxionApp:
                 recent_memories=recent_memories,
                 model=self.current_model,
                 recent_tasks=self._recent_open_task_titles(),
+                active_projects=self._active_project_summaries(),
             )
         except Exception as error:
             return self._fallback_response(user_message, f"AI Core error: {error}")
@@ -129,6 +134,22 @@ class AxionApp:
             return []
 
         return [task.title for task in tasks[:limit]]
+
+    def _active_project_summaries(self, limit: int = 5) -> list[str]:
+        """Return active project summaries for AI context when available."""
+        try:
+            projects = self.projects.list_projects("active")
+        except Exception:
+            return []
+
+        summaries = []
+        for project in projects[:limit]:
+            if project.description:
+                summaries.append(f"{project.name}: {project.description}")
+            else:
+                summaries.append(project.name)
+
+        return summaries
 
     def _fallback_response(self, user_message: str, reason: object) -> str:
         """Use the basic responder and log why the fallback was needed."""
