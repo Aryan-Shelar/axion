@@ -5,8 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
+from axion.ai.ai_core import AICore
+from axion.ai.ollama_client import DEFAULT_MODEL
 from axion.core.activity_log import log_activity
-from axion.core.basic_responder import respond_to_chat
 from axion.core.identity import (
     AXION_NAME,
     AXION_PERSONALITY,
@@ -28,15 +29,22 @@ class CommandResponse:
 
 
 class CommandRouter:
-    """Handle slash commands and placeholder chat input."""
+    """Handle Axion slash commands."""
 
-    def __init__(self, memory: SQLiteMemory) -> None:
+    def __init__(
+        self,
+        memory: SQLiteMemory,
+        ai_core: AICore | None = None,
+        current_model: str = DEFAULT_MODEL,
+    ) -> None:
         self.memory = memory
+        self.ai_core = ai_core or AICore()
+        self.current_model = current_model
 
     def handle(self, user_input: str) -> CommandResponse:
         """Route input to a command handler."""
         if not user_input.startswith("/"):
-            return CommandResponse(respond_to_chat(user_input))
+            return CommandResponse("Normal chat is handled by the Axion app.")
 
         command, _, argument = user_input.partition(" ")
         command = command.lower()
@@ -64,13 +72,20 @@ class CommandRouter:
         if command == "/whoami":
             return CommandResponse(self._whoami())
         if command == "/status":
-            return CommandResponse(build_status(self.memory))
+            ollama_available = self.ai_core.is_available()
+            return CommandResponse(
+                build_status(self.memory, self.current_model, ollama_available)
+            )
         if command == "/clear":
             return CommandResponse("\033[2J\033[HScreen cleared.")
         if command == "/search-memory":
             return self._search_memories(argument)
         if command == "/search-notes":
             return self._search_notes(argument)
+        if command == "/ai-status":
+            return CommandResponse(self._ai_status())
+        if command == "/model":
+            return self._model_command(argument)
 
         return CommandResponse(f"Unknown command: {command}. Type /help for options.")
 
@@ -91,6 +106,9 @@ class CommandRouter:
                 "/folder <path> - Open a folder on your computer",
                 "/whoami - Show Axion's identity",
                 "/status - Show Axion system status",
+                "/ai-status - Show local AI Core status",
+                "/model - Show the current AI model",
+                "/model <name> - Change the current AI model",
                 "/clear - Clear the terminal screen",
             ]
         )
@@ -194,3 +212,22 @@ class CommandRouter:
                 AXION_PERSONALITY,
             ]
         )
+
+    def _ai_status(self) -> str:
+        available_text = "yes" if self.ai_core.is_available() else "no"
+        return "\n".join(
+            [
+                "AI Core status:",
+                "Provider: Ollama",
+                f"Current model: {self.current_model}",
+                f"Ollama available: {available_text}",
+            ]
+        )
+
+    def _model_command(self, argument: str) -> CommandResponse:
+        if not argument:
+            return CommandResponse(f"Current model: {self.current_model}")
+
+        self.current_model = argument
+        log_activity("Model changed", self.current_model)
+        return CommandResponse(f"Current model set to: {self.current_model}")

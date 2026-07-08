@@ -1,23 +1,20 @@
 # Axion Roadmap
 
-## v0.2
+## v0.3 AI Core
 
 - Identity and personality foundation
 - Improved terminal welcome screen
 - Expanded command router
+- Local Ollama AI Core
+- Runtime model switching
+- Fallback responder when Ollama is unavailable
 - Local SQLite memory and notes
 - Memory and note search
 - Browser and folder tools
 - Status reporting
 - Basic safety classification
 - Activity logging
-- Built-in responses before the AI Core exists
-
-## v0.3 AI Core
-
-- Add the first AI Core interface
-- Keep local command tools separate from model logic
-- Route assistant responses through clear safety checks
+- Built-in fallback responses when the AI Core is unavailable
 
 ## v0.4 Voice
 

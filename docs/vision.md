@@ -13,4 +13,4 @@ The long-term vision is a trusted local layer that can:
 - Coordinate multiple AI agents
 - Keep the user in control
 
-Version 0.2 builds the foundation: identity, local memory, command routing, basic tools, safety classification, status reporting, and activity logs.
+Version 0.3 builds the first local AI Core with Ollama, while preserving the foundation: identity, local memory, command routing, basic tools, safety classification, status reporting, fallback responses, and activity logs.

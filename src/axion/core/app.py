@@ -1,10 +1,37 @@
 """Main terminal application for Axion."""
 
+from axion.ai.ai_core import AICore
+from axion.ai.ollama_client import DEFAULT_MODEL
 from axion.commands.router import CommandRouter
 from axion.core.activity_log import log_activity
+from axion.core.basic_responder import respond_to_chat
 from axion.core.identity import AXION_NAME, AXION_TAGLINE, AXION_VERSION
 from axion.memory.sqlite_memory import SQLiteMemory
 from axion.utils.text import divider
+
+
+def is_valid_ai_response(response: str) -> bool:
+    """Return True for any non-empty response that is not a clear error."""
+    if not response:
+        return False
+
+    text = response.strip()
+    if not text:
+        return False
+
+    return not is_error_response(text)
+
+
+def is_error_response(response: str) -> bool:
+    """Return True when the response is clearly an AI provider error."""
+    text = response.strip().lower()
+    error_markers = [
+        "Ollama is not running",
+        "Model not found",
+        "Error:",
+        "Failed to",
+    ]
+    return any(text.startswith(marker.lower()) for marker in error_markers)
 
 
 class AxionApp:
@@ -12,7 +39,9 @@ class AxionApp:
 
     def __init__(self) -> None:
         self.memory = SQLiteMemory()
-        self.router = CommandRouter(self.memory)
+        self.ai_core = AICore()
+        self.current_model = DEFAULT_MODEL
+        self.router = CommandRouter(self.memory, self.ai_core, self.current_model)
         self.running = True
 
     def show_welcome(self) -> None:
@@ -40,10 +69,57 @@ class AxionApp:
             if not user_input:
                 continue
 
+            if not user_input.startswith("/"):
+                print(self._handle_normal_chat(user_input))
+                continue
+
             response = self.router.handle(user_input)
+            self.current_model = self.router.current_model
             if response.should_exit:
                 self.running = False
                 log_activity("app exit")
 
             if response.message:
                 print(response.message)
+
+    def _handle_normal_chat(self, user_message: str) -> str:
+        """Send normal chat to the AI Core with fallback if needed."""
+        log_activity("Routing normal message to AI Core", user_message)
+        try:
+            recent_memories = self._recent_memory_contents()
+            response = self.ai_core.respond(
+                user_message,
+                recent_memories,
+                self.current_model,
+            )
+        except Exception as error:
+            return self._fallback_response(user_message, f"AI Core error: {error}")
+
+        if not is_valid_ai_response(response):
+            return self._fallback_response(
+                user_message,
+                self._fallback_reason_for_response(response),
+            )
+
+        return response.strip()
+
+    def _recent_memory_contents(self, limit: int = 5) -> list[str]:
+        """Return recent memories for AI context when available."""
+        try:
+            memories = self.memory.list_memories()
+        except Exception:
+            return []
+
+        return [memory.content for memory in memories[:limit]]
+
+    def _fallback_response(self, user_message: str, reason: object) -> str:
+        """Use the basic responder and log why the fallback was needed."""
+        log_activity("Using fallback basic_responder because", str(reason))
+        return respond_to_chat(user_message)
+
+    def _fallback_reason_for_response(self, response: str) -> str:
+        """Return a clear log reason for an invalid AI Core response."""
+        if not isinstance(response, str) or not response.strip():
+            return "empty AI Core response"
+
+        return response.strip()
