@@ -7,6 +7,7 @@ from axion.core.activity_log import log_activity
 from axion.core.basic_responder import respond_to_chat
 from axion.core.identity import AXION_NAME, AXION_TAGLINE, AXION_VERSION
 from axion.memory.sqlite_memory import SQLiteMemory
+from axion.tasks.task_store import TaskStore
 from axion.utils.text import divider
 
 
@@ -39,9 +40,15 @@ class AxionApp:
 
     def __init__(self) -> None:
         self.memory = SQLiteMemory()
+        self.tasks = TaskStore()
         self.ai_core = AICore()
         self.current_model = DEFAULT_MODEL
-        self.router = CommandRouter(self.memory, self.ai_core, self.current_model)
+        self.router = CommandRouter(
+            self.memory,
+            self.ai_core,
+            self.current_model,
+            self.tasks,
+        )
         self.running = True
 
     def show_welcome(self) -> None:
@@ -56,6 +63,7 @@ class AxionApp:
     def run(self) -> None:
         """Start the command loop."""
         self.memory.initialize()
+        self.tasks.initialize()
         log_activity("app start")
         self.show_welcome()
 
@@ -89,8 +97,9 @@ class AxionApp:
             recent_memories = self._recent_memory_contents()
             response = self.ai_core.respond(
                 user_message,
-                recent_memories,
-                self.current_model,
+                recent_memories=recent_memories,
+                model=self.current_model,
+                recent_tasks=self._recent_open_task_titles(),
             )
         except Exception as error:
             return self._fallback_response(user_message, f"AI Core error: {error}")
@@ -111,6 +120,15 @@ class AxionApp:
             return []
 
         return [memory.content for memory in memories[:limit]]
+
+    def _recent_open_task_titles(self, limit: int = 5) -> list[str]:
+        """Return recent open task titles for AI context when available."""
+        try:
+            tasks = self.tasks.list_tasks("open")
+        except Exception:
+            return []
+
+        return [task.title for task in tasks[:limit]]
 
     def _fallback_response(self, user_message: str, reason: object) -> str:
         """Use the basic responder and log why the fallback was needed."""

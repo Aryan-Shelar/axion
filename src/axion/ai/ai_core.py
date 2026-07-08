@@ -21,19 +21,27 @@ class AICore:
         user_message: str,
         recent_memories: list[str] | None = None,
         model: str = DEFAULT_MODEL,
+        recent_tasks: list[str] | None = None,
     ) -> str:
         """Build a prompt and return the model response."""
-        prompt = self._build_prompt(user_message, recent_memories)
+        prompt = self._build_prompt(user_message, recent_memories, recent_tasks)
         return self.client.generate(prompt, model=model)
 
     def _build_prompt(
-        self, user_message: str, recent_memories: list[str] | None
+        self,
+        user_message: str,
+        recent_memories: list[str] | None,
+        recent_tasks: list[str] | None = None,
     ) -> str:
         prompt_parts = [SYSTEM_PROMPT]
 
         if recent_memories:
             memory_lines = [f"- {memory}" for memory in recent_memories]
             prompt_parts.append("Recent memories:\n" + "\n".join(memory_lines))
+
+        if recent_tasks:
+            task_lines = [f"* {task}" for task in recent_tasks]
+            prompt_parts.append("RECENT OPEN TASKS:\n" + "\n".join(task_lines))
 
         prompt_parts.append(f"User message:\n{user_message}")
         prompt_parts.append("Axion response:")

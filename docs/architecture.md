@@ -1,10 +1,10 @@
 # Axion Architecture
 
-Axion v0.3 is a small, modular Python terminal app. It uses only the Python standard library and adds a local AI Core through Ollama.
+Axion v0.4 is a small, modular Python terminal app. It uses only the Python standard library, keeps the local Ollama AI Core, and adds safe app launching plus local task management.
 
 ## Core
 
-Core modules own the app loop, identity, status reporting, safety classification, activity logging, and fallback built-in chat responses.
+Core modules own the app loop, identity, status reporting, safety classification, activity logging, response validation, and fallback built-in chat responses.
 
 Important files:
 
@@ -17,7 +17,7 @@ Important files:
 
 ## AI Core
 
-The AI Core builds the final prompt and asks the local model for a response. It can include recent memories as context.
+The AI Core builds the final prompt and asks the local model for a response. It can include recent memories and recent open tasks as context.
 
 Important file:
 
@@ -41,7 +41,7 @@ Important file:
 
 ## Fallback Responder
 
-If Ollama is unavailable, normal chat falls back to a small built-in responder. This keeps Axion useful even before the local model is running.
+If the AI Core cannot return a valid response, normal chat falls back to a small built-in responder.
 
 Important file:
 
@@ -49,7 +49,7 @@ Important file:
 
 ## Commands
 
-The command router receives terminal input and decides what system should handle it. Slash commands are routed to specific handlers. Normal text is routed through the AI Core when Ollama is available.
+The command router receives terminal input and decides what system should handle it. Slash commands are routed to specific handlers. Normal text is handled by the app loop and routed to the AI Core.
 
 Important file:
 
@@ -63,14 +63,29 @@ Important file:
 
 - `src/axion/memory/sqlite_memory.py`
 
+## Task Store
+
+Tasks use the same SQLite database at `data/axion.db`. The task store keeps open and done tasks in Axion's own `tasks` table. Deleting a task only removes a row from this table; it never deletes files.
+
+Important file:
+
+- `src/axion/tasks/task_store.py`
+
 ## Tools
 
-Tools are safe, focused helpers that interact with the computer. In v0.3, Axion can open websites and folders.
+Tools are safe, focused helpers that interact with the computer. In v0.4, Axion can open websites, folders, and allowlisted apps.
 
 Important files:
 
 - `src/axion/tools/browser.py`
 - `src/axion/tools/folder_opener.py`
+- `src/axion/tools/app_launcher.py`
+
+## App Launcher
+
+The app launcher uses an allowlist for safety. Users can launch known shortcuts like `notepad`, `calculator`, or `explorer`, but Axion does not accept raw paths and does not run arbitrary shell commands. The launcher uses `subprocess.Popen(..., shell=False)`.
+
+This keeps app control useful while avoiding unsafe command execution.
 
 ## Safety
 
@@ -80,14 +95,14 @@ The safety layer classifies future actions as:
 - `needs_confirmation`
 - `blocked`
 
-Dangerous actions are not executed in v0.3. This module exists so future automation has a clear safety checkpoint.
+Dangerous actions are not executed in v0.4. This module exists so future automation has a clear safety checkpoint.
 
 ## Logs
 
 Important actions are logged to `logs/axion.log`. The log folder is created automatically when Axion starts or writes its first log entry.
 
-Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, AI response requests, Ollama unavailability, model changes, and app exit.
+Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, AI response routing, model changes, and app exit.
 
 ## Future Agents
 
-Future versions can add agents on top of this foundation. Agents should use the command, memory, AI Core, tool, safety, and log systems rather than bypassing them.
+Future versions can add agents on top of this foundation. Agents should use the command, memory, task, AI Core, tool, safety, and log systems rather than bypassing them.

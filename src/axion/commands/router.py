@@ -16,6 +16,8 @@ from axion.core.identity import (
 )
 from axion.core.status import build_status
 from axion.memory.sqlite_memory import SQLiteMemory
+from axion.tasks.task_store import TaskItem, TaskStore
+from axion.tools.app_launcher import launch_app, list_app_shortcuts
 from axion.tools.browser import open_url
 from axion.tools.folder_opener import open_folder
 
@@ -36,10 +38,12 @@ class CommandRouter:
         memory: SQLiteMemory,
         ai_core: AICore | None = None,
         current_model: str = DEFAULT_MODEL,
+        task_store: TaskStore | None = None,
     ) -> None:
         self.memory = memory
         self.ai_core = ai_core or AICore()
         self.current_model = current_model
+        self.task_store = task_store or TaskStore()
 
     def handle(self, user_input: str) -> CommandResponse:
         """Route input to a command handler."""
@@ -69,12 +73,25 @@ class CommandRouter:
             return self._open_url(argument)
         if command == "/folder":
             return self._open_folder(argument)
+        if command == "/apps":
+            return CommandResponse(self._apps())
+        if command == "/app":
+            return self._app(argument)
+        if command == "/task":
+            return self._task_command(argument)
+        if command == "/tasks":
+            return self._tasks_command(argument)
         if command == "/whoami":
             return CommandResponse(self._whoami())
         if command == "/status":
             ollama_available = self.ai_core.is_available()
             return CommandResponse(
-                build_status(self.memory, self.current_model, ollama_available)
+                build_status(
+                    self.memory,
+                    self.current_model,
+                    ollama_available,
+                    self.task_store,
+                )
             )
         if command == "/clear":
             return CommandResponse("\033[2J\033[HScreen cleared.")
@@ -104,6 +121,14 @@ class CommandRouter:
                 "/search-notes <keyword> - Search saved notes",
                 "/open <url> - Open a website in your default browser",
                 "/folder <path> - Open a folder on your computer",
+                "/app <name> - Open an allowlisted app",
+                "/apps - List available app shortcuts",
+                "/task add <title> - Save a task",
+                "/tasks - List all tasks",
+                "/tasks open - List open tasks",
+                "/tasks done - List completed tasks",
+                "/task done <id> - Mark a task done",
+                "/task delete <id> - Delete a task",
                 "/whoami - Show Axion's identity",
                 "/status - Show Axion system status",
                 "/ai-status - Show local AI Core status",
@@ -203,6 +228,99 @@ class CommandRouter:
             log_activity("folder opened", message.removeprefix("Opened folder: "))
 
         return CommandResponse(message)
+
+    def _apps(self) -> str:
+        shortcuts = ", ".join(list_app_shortcuts())
+        return f"Available apps: {shortcuts}"
+
+    def _app(self, argument: str) -> CommandResponse:
+        if not argument:
+            return CommandResponse("Usage: /app <name>")
+
+        message, launched = launch_app(argument)
+        if launched:
+            log_activity("app launched", argument.strip().lower())
+        else:
+            log_activity("app launch failed", f"{argument}: {message}")
+
+        return CommandResponse(message)
+
+    def _task_command(self, argument: str) -> CommandResponse:
+        action, _, value = argument.partition(" ")
+        action = action.lower().strip()
+        value = value.strip()
+
+        if action == "add":
+            return self._task_add(value)
+        if action == "done":
+            return self._task_done(value)
+        if action == "delete":
+            return self._task_delete(value)
+
+        return CommandResponse(
+            "Usage: /task add <title>, /task done <id>, or /task delete <id>"
+        )
+
+    def _tasks_command(self, argument: str) -> CommandResponse:
+        status = argument.lower().strip() or None
+        if status not in {None, "open", "done"}:
+            return CommandResponse("Usage: /tasks, /tasks open, or /tasks done")
+
+        tasks = self.task_store.list_tasks(status)
+        if not tasks:
+            if status:
+                return CommandResponse(f"No {status} tasks.")
+            return CommandResponse("No tasks saved yet.")
+
+        return CommandResponse(self._format_tasks(tasks))
+
+    def _task_add(self, title: str) -> CommandResponse:
+        if not title:
+            return CommandResponse("Usage: /task add <title>")
+
+        task_id = self.task_store.add_task(title)
+        log_activity("task added", f"id={task_id}")
+        return CommandResponse(f"Task saved with id {task_id}.")
+
+    def _task_done(self, value: str) -> CommandResponse:
+        task_id = self._parse_task_id(value)
+        if task_id is None:
+            return CommandResponse("Usage: /task done <id>")
+
+        if not self.task_store.complete_task(task_id):
+            return CommandResponse(f"Task {task_id} was not found.")
+
+        log_activity("task completed", f"id={task_id}")
+        return CommandResponse(f"Task {task_id} marked done.")
+
+    def _task_delete(self, value: str) -> CommandResponse:
+        task_id = self._parse_task_id(value)
+        if task_id is None:
+            return CommandResponse("Usage: /task delete <id>")
+
+        if not self.task_store.delete_task(task_id):
+            return CommandResponse(f"Task {task_id} was not found.")
+
+        log_activity("task deleted", f"id={task_id}")
+        return CommandResponse(f"Task {task_id} deleted.")
+
+    def _parse_task_id(self, value: str) -> int | None:
+        try:
+            task_id = int(value)
+        except ValueError:
+            return None
+
+        if task_id < 1:
+            return None
+
+        return task_id
+
+    def _format_tasks(self, tasks: list[TaskItem]) -> str:
+        lines = ["Tasks:"]
+        for task in tasks:
+            lines.append(f"{task.id}. [{task.status}] {task.title}")
+
+        return "\n".join(lines)
 
     def _whoami(self) -> str:
         return "\n".join(
