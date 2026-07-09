@@ -1,7 +1,7 @@
 """Run a small set of safe terminal commands.
 
 The runner uses an exact allowlist and never passes user input through a shell.
-This keeps v0.6 useful for status checks without turning Axion into an
+This keeps Axion useful for status checks without turning it into an
 arbitrary command executor.
 """
 

@@ -25,6 +25,14 @@ from axion.projects.project_store import (
 from axion.tasks.task_store import TaskItem, TaskStore
 from axion.tools.app_launcher import launch_app, list_app_shortcuts
 from axion.tools.browser import open_url
+from axion.tools.file_manager import (
+    clean_screenshots,
+    move_file,
+    preview_screenshots,
+    search_files,
+    search_files_by_extension,
+    trash_file,
+)
 from axion.tools.folder_opener import open_folder
 from axion.tools.safe_runner import run_safe_command
 
@@ -88,6 +96,16 @@ class CommandRouter:
             return self._app(argument)
         if command == "/run":
             return self._run(argument)
+        if command == "/find":
+            return self._find(argument)
+        if command == "/find-ext":
+            return self._find_ext(argument)
+        if command == "/move":
+            return self._move(argument)
+        if command == "/trash":
+            return self._trash(argument)
+        if command == "/screenshots":
+            return self._screenshots(argument)
         if command == "/task":
             return self._task_command(argument)
         if command == "/tasks":
@@ -140,6 +158,14 @@ class CommandRouter:
                 "/app <name> - Open an allowlisted app",
                 "/apps - List available app shortcuts",
                 "/run <command> - Run a safe allowlisted terminal command",
+                "/find <query> - Search for files by name",
+                "/find <query> in <folder> - Search for files in a folder",
+                "/find-ext <extension> - Search for files by extension",
+                "/find-ext <extension> in <folder> - Search for files by extension in a folder",
+                "/move <source_file_path> :: <destination_folder> - Move a file without overwriting",
+                "/trash <file_path> - Move a file to Axion Trash",
+                "/screenshots preview - Preview screenshot-like files",
+                "/screenshots clean --confirm - Move screenshot-like files to Axion Trash",
                 "/task add <title> - Save a task",
                 "/tasks - List all tasks",
                 "/tasks open - List open tasks",
@@ -287,6 +313,98 @@ class CommandRouter:
             log_activity("command rejected", argument)
 
         return CommandResponse(result.message)
+
+    def _find(self, argument: str) -> CommandResponse:
+        query, folder = self._split_in_folder(argument)
+        if not query:
+            return CommandResponse("Usage: /find <query>")
+
+        log_activity("file search started", argument)
+        result = search_files(query, folder)
+        if result.success:
+            log_activity("file search completed", result.detail or query)
+        else:
+            log_activity("file operation failed", result.message)
+
+        return CommandResponse(result.message)
+
+    def _find_ext(self, argument: str) -> CommandResponse:
+        extension, folder = self._split_in_folder(argument)
+        if not extension:
+            return CommandResponse("Usage: /find-ext <extension>")
+
+        log_activity("file search started", argument)
+        result = search_files_by_extension(extension, folder)
+        if result.success:
+            log_activity("file search completed", result.detail or extension)
+        else:
+            log_activity("file operation failed", result.message)
+
+        return CommandResponse(result.message)
+
+    def _move(self, argument: str) -> CommandResponse:
+        source, destination = self._split_double_colon(argument)
+        if not source or not destination:
+            return CommandResponse("Usage: /move <source_file_path> :: <destination_folder>")
+
+        result = move_file(source, destination)
+        if result.success:
+            log_activity("file moved", result.detail)
+        else:
+            log_activity("file operation failed", result.message)
+
+        return CommandResponse(result.message)
+
+    def _trash(self, argument: str) -> CommandResponse:
+        if not argument:
+            return CommandResponse("Usage: /trash <file_path>")
+
+        result = trash_file(argument)
+        if result.success:
+            log_activity("file trashed", result.detail)
+        else:
+            log_activity("file operation failed", result.message)
+
+        return CommandResponse(result.message)
+
+    def _screenshots(self, argument: str) -> CommandResponse:
+        normalized = " ".join(argument.lower().split())
+
+        if normalized == "preview":
+            result = preview_screenshots()
+            if result.success:
+                log_activity("screenshot preview completed", result.detail)
+            else:
+                log_activity("file operation failed", result.message)
+            return CommandResponse(result.message)
+
+        if normalized == "clean":
+            result = clean_screenshots(confirm=False)
+            log_activity("file operation failed", result.message)
+            return CommandResponse(result.message)
+
+        if normalized == "clean --confirm":
+            result = clean_screenshots(confirm=True)
+            if result.success:
+                log_activity("screenshot clean completed", result.detail)
+            else:
+                log_activity("file operation failed", result.message)
+            return CommandResponse(result.message)
+
+        return CommandResponse("Usage: /screenshots preview or /screenshots clean --confirm")
+
+    def _split_in_folder(self, argument: str) -> tuple[str, str | None]:
+        marker = " in "
+        index = argument.lower().rfind(marker)
+        if index == -1:
+            return argument.strip(), None
+
+        query = argument[:index].strip()
+        folder = argument[index + len(marker) :].strip()
+        if not query or not folder:
+            return argument.strip(), None
+
+        return query, folder
 
     def _task_command(self, argument: str) -> CommandResponse:
         action, _, value = argument.partition(" ")

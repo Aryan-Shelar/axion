@@ -2,9 +2,9 @@
 
 Axion is a private AI Operating System / AI Operating Layer. The long-term goal is a world-class personal assistant that can think, remember, plan, use tools, and control the computer safely.
 
-Axion v0.6 adds a safe terminal runner. It can run a small allowlist of useful commands through `/run`, blocks dangerous commands, and never uses `shell=True`.
+Axion v0.7 adds a Safe File Manager. It can search for files, move files without overwriting, and move unwanted files into Axion Trash instead of permanently deleting them.
 
-## Current v0.6 Features
+## Current v0.7 Features
 
 - Local Ollama AI Core with default model `llama3.2:1b`
 - Memory and notes
@@ -13,8 +13,9 @@ Axion v0.6 adds a safe terminal runner. It can run a small allowlist of useful c
 - Active project and open task context for AI chat
 - Safe app launcher with allowlisted shortcuts
 - Safe terminal runner with allowlisted commands
+- Safe File Manager for search, move, trash, and screenshot cleanup
 - Website and folder opening
-- Status report with AI, project, task, and safe runner details
+- Status report with AI, project, task, runner, and file manager details
 - Activity logging to `logs/axion.log`
 
 ## Run
@@ -57,6 +58,14 @@ python -m axion
 - `/apps`
 - `/app <name>`
 - `/run <command>`
+- `/find <query>`
+- `/find <query> in <folder>`
+- `/find-ext <extension>`
+- `/find-ext <extension> in <folder>`
+- `/move <source_file_path> :: <destination_folder>`
+- `/trash <file_path>`
+- `/screenshots preview`
+- `/screenshots clean --confirm`
 - `/open <url>`
 - `/folder <path>`
 - `/whoami`
@@ -65,6 +74,22 @@ python -m axion
 - `/model`
 - `/model <name>`
 - `/clear`
+
+## Safe File Manager
+
+Axion v0.7 never permanently deletes files. The `/trash` command and screenshot cleaner move files into:
+
+```text
+data/trash/YYYY-MM-DD_HHMMSS/
+```
+
+File manager safety rules:
+
+- No permanent delete
+- No overwrite
+- Files only, no folder moves yet
+- Trash operations are reversible from Axion Trash
+- Screenshot cleanup requires `/screenshots clean --confirm`
 
 ## Safe Run Commands
 
@@ -84,19 +109,21 @@ Dangerous commands such as `del`, `rmdir`, `format`, `shutdown`, `powershell`, `
 ## Examples
 
 ```text
-/project create Axion :: AI Operating System built with Python and Ollama
-/task add Push Axion v0.6 to GitHub
-/run git status
-/run python --version
-/run del test.txt
+/find axion
+/find-ext py in D:\Axion
+/screenshots preview
+/screenshots clean
+/screenshots clean --confirm
+/trash C:\Users\ADMIN\Downloads\test.png
+/move C:\Users\ADMIN\Downloads\test.txt :: C:\Users\ADMIN\Documents
 /status
-what should I work on next?
 /exit
 ```
 
+If a test file does not exist, Axion shows a friendly error and keeps running.
+
 ## Roadmap
 
-- v0.7 File Search
 - v0.8 Voice
 - v0.9 Browser Automation
 - v1.0 Agent System

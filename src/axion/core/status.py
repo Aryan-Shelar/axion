@@ -9,6 +9,7 @@ from axion.core.identity import AXION_VERSION
 from axion.memory.sqlite_memory import SQLiteMemory
 from axion.projects.project_store import ProjectStore
 from axion.tasks.task_store import TaskStore
+from axion.tools.file_manager import trash_root
 
 
 def build_status(
@@ -29,6 +30,8 @@ def build_status(
             f"Current model: {current_model}",
             f"Ollama available: {available_text}",
             "Safe terminal runner: enabled",
+            "File manager: enabled",
+            f"Axion trash folder: {trash_root()}",
             f"Memory database: {memory.db_path}",
             f"Memories: {memory.count_memories()}",
             f"Notes: {memory.count_notes()}",

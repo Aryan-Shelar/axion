@@ -1,6 +1,6 @@
 # Axion Architecture
 
-Axion v0.6 is a modular Python terminal app that uses only the Python standard library. It keeps the local Ollama AI Core, projects, tasks, memory, notes, and safe tools, then adds a tightly allowlisted terminal runner.
+Axion v0.7 is a modular Python terminal app that uses only the Python standard library. It keeps the local Ollama AI Core, projects, tasks, memory, notes, and safe tools, then adds a Safe File Manager for reversible file operations.
 
 ## Core
 
@@ -90,12 +90,12 @@ ACTIVE PROJECTS:
 * Axion: AI Operating System built with Python and Ollama
 
 OPEN TASKS:
-* Push Axion v0.6 to GitHub
+* Push Axion v0.7 to GitHub
 ```
 
 ## Tools
 
-Tools are safe, focused helpers that interact with the computer. In v0.6, Axion can open websites, folders, saved project folders, allowlisted apps, and a small set of allowlisted terminal commands.
+Tools are safe, focused helpers that interact with the computer. In v0.7, Axion can open websites, folders, saved project folders, allowlisted apps, allowlisted terminal commands, and safe file operations.
 
 Important files:
 
@@ -103,6 +103,7 @@ Important files:
 - `src/axion/tools/folder_opener.py`
 - `src/axion/tools/app_launcher.py`
 - `src/axion/tools/safe_runner.py`
+- `src/axion/tools/file_manager.py`
 
 ## App Launcher
 
@@ -125,9 +126,22 @@ Allowlisted commands:
 - `ollama list`
 - `ollama --version`
 
-Blocked keywords include `del`, `erase`, `rmdir`, `rd`, `format`, `shutdown`, `restart`, `powershell`, `rm`, `remove-item`, and `taskkill`.
-
 The runner uses `subprocess.run(..., shell=False)` and captures stdout and stderr. It does not execute arbitrary user commands.
+
+## Safe File Manager
+
+The Safe File Manager powers `/find`, `/find-ext`, `/move`, `/trash`, and `/screenshots`. It uses `pathlib` for paths and searches filenames case-insensitively.
+
+Safety rules:
+
+- No permanent delete
+- No overwrite
+- No folder moves yet, only file moves
+- Trash operations move files to `data/trash/YYYY-MM-DD_HHMMSS/`
+- Duplicate destination filenames get safe suffixes like `_1` and `_2`
+- Screenshot cleanup requires `/screenshots clean --confirm`
+
+Search skips heavy or system folders such as `.git`, `.venv`, `__pycache__`, `node_modules`, `.pnpm-store`, `AppData`, `Windows`, and `Program Files`.
 
 ## Safety
 
@@ -137,14 +151,14 @@ The safety layer classifies future actions as:
 - `needs_confirmation`
 - `blocked`
 
-Dangerous actions are not executed in v0.6. This module exists so future automation has a clear safety checkpoint.
+Dangerous actions are not executed in v0.7. This module exists so future automation has a clear safety checkpoint.
 
 ## Logs
 
 Important actions are logged to `logs/axion.log`. The log folder is created automatically when Axion starts or writes its first log entry.
 
-Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, project changes, safe command execution, command blocks, command rejections, AI response routing, model changes, and app exit.
+Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, project changes, safe command execution, command blocks, command rejections, file searches, file moves, file trashing, screenshot cleanup, file operation failures, AI response routing, model changes, and app exit.
 
 ## Future Agents
 
-Future versions can add agents on top of this foundation. Agents should use the command, project, memory, task, AI Core, tool, safety, and log systems rather than bypassing them.
+Future versions can add agents on top of this foundation. Agents should use the command, project, memory, task, AI Core, tool, safety, file manager, and log systems rather than bypassing them.

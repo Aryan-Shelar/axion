@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "axion"
-version = "0.6.0"
-description = "A local Python terminal app with AI Core, projects, tasks, apps, and safe commands for Axion."
+version = "0.7.0"
+description = "A local Python terminal app with AI Core, projects, tasks, apps, safe commands, and safe file management for Axion."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []

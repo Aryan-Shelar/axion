@@ -1,6 +1,6 @@
 # Axion Roadmap
 
-## v0.6 Safe Terminal Commands
+## v0.7 Safe File Manager
 
 - Identity and personality foundation
 - Improved terminal welcome screen
@@ -16,14 +16,14 @@
 - SQLite project manager
 - Active project and open task context for AI chat
 - Allowlisted safe terminal command runner
+- Safe file search by name and extension
+- Safe file moves without overwrite
+- Axion Trash for reversible file cleanup
+- Screenshot preview and confirmed cleanup
 - Status reporting
 - Basic safety classification
 - Activity logging
 - Built-in fallback responses when the AI Core is unavailable
-
-## v0.7 File Search
-
-- Add local file search and indexing helpers
 
 ## v0.8 Voice
 
