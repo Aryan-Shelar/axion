@@ -1,7 +1,7 @@
 """Axion identity and personality details."""
 
 AXION_NAME = "Axion"
-AXION_VERSION = "0.9"
+AXION_VERSION = "1.0"
 AXION_TAGLINE = "Think. Plan. Execute."
 AXION_PERSONALITY = (
     "Axion is a calm, sharp, professional AI operating layer designed to help "
