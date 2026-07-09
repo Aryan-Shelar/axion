@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
+from axion.agents.agent_manager import AgentManager
+from axion.agents.plan_store import PLAN_STATUSES, PlanStore
+from axion.agents.planner_agent import PlannerAgent
 from axion.ai.ai_core import AICore
 from axion.ai.ollama_client import DEFAULT_MODEL
 from axion.core.activity_log import log_activity
@@ -63,6 +66,8 @@ class CommandRouter:
         task_store: TaskStore | None = None,
         project_store: ProjectStore | None = None,
         voice_enabled: bool = False,
+        plan_store: PlanStore | None = None,
+        agent_manager: AgentManager | None = None,
     ) -> None:
         self.memory = memory
         self.ai_core = ai_core or AICore()
@@ -70,6 +75,13 @@ class CommandRouter:
         self.task_store = task_store or TaskStore()
         self.project_store = project_store or ProjectStore()
         self.voice_enabled = voice_enabled
+        self.plan_store = plan_store or PlanStore()
+        self.agent_manager = agent_manager or AgentManager(
+            self.plan_store,
+            PlannerAgent(self.ai_core),
+            self.task_store,
+        )
+        self.plan_store.initialize()
 
     def handle(self, user_input: str) -> CommandResponse:
         """Route input to a command handler."""
@@ -121,6 +133,12 @@ class CommandRouter:
             return self._trash(argument)
         if command == "/screenshots":
             return self._screenshots(argument)
+        if command == "/agent":
+            return self._agent_command(argument)
+        if command == "/plans":
+            return self._plans_command(argument)
+        if command == "/plan":
+            return self._plan_command(argument)
         if command == "/task":
             return self._task_command(argument)
         if command == "/tasks":
@@ -141,6 +159,7 @@ class CommandRouter:
                     self.task_store,
                     self.project_store,
                     self.voice_enabled,
+                    self.plan_store,
                 )
             )
         if command == "/clear":
@@ -190,6 +209,17 @@ class CommandRouter:
                 "/trash <file_path> - Move a file to Axion Trash",
                 "/screenshots preview - Preview screenshot-like files",
                 "/screenshots clean --confirm - Move screenshot-like files to Axion Trash",
+                "/agent status - Show Agent Mode status",
+                "/agent plan <goal> - Create and save an agent plan",
+                "/plans - List all agent plans",
+                "/plans active - List active agent plans",
+                "/plans paused - List paused agent plans",
+                "/plans done - List done agent plans",
+                "/plan show <id> - Show plan details",
+                "/plan next <id> - Show the next open plan step",
+                "/plan done <id> <step_number> - Mark a plan step done",
+                "/plan status <id> <active|paused|done> - Update plan status",
+                "/plan tasks <id> - Convert open plan steps into Axion tasks",
                 "/task add <title> - Save a task",
                 "/tasks - List all tasks",
                 "/tasks open - List open tasks",
@@ -479,6 +509,141 @@ class CommandRouter:
             return CommandResponse(result.message)
 
         return CommandResponse("Usage: /screenshots preview or /screenshots clean --confirm")
+
+
+    def _agent_command(self, argument: str) -> CommandResponse:
+        """Handle /agent commands."""
+        action, _, value = argument.partition(" ")
+        action = action.lower().strip()
+        value = value.strip()
+
+        if action == "status":
+            active_count = self.plan_store.count_plans("active")
+            done_count = self.plan_store.count_plans("done")
+            paused_count = self.plan_store.count_plans("paused")
+            return CommandResponse(
+                "\n".join(
+                    [
+                        "Agent Mode: enabled",
+                        f"Active plans: {active_count}",
+                        f"Paused plans: {paused_count}",
+                        f"Done plans: {done_count}",
+                    ]
+                )
+            )
+
+        if action == "plan":
+            if not value:
+                return CommandResponse("Usage: /agent plan <goal>")
+
+            result = self.agent_manager.create_plan(value, self.current_model)
+            if result.success:
+                log_activity("agent plan created", f"id={result.plan_id}")
+                if result.fallback_used:
+                    log_activity("planner fallback used", f"id={result.plan_id}")
+
+            return CommandResponse(result.message)
+
+        return CommandResponse("Usage: /agent status or /agent plan <goal>")
+
+    def _plans_command(self, argument: str) -> CommandResponse:
+        """Handle /plans commands."""
+        status = argument.lower().strip() or None
+
+        if status not in {None, *PLAN_STATUSES}:
+            return CommandResponse("Usage: /plans, /plans active, /plans paused, or /plans done")
+
+        plans = self.plan_store.list_plans(status)
+        if not plans:
+            if status:
+                return CommandResponse(f"No {status} plans.")
+            return CommandResponse("No agent plans saved yet.")
+
+        return CommandResponse(self.agent_manager.format_plan_list(plans))
+
+    def _plan_command(self, argument: str) -> CommandResponse:
+        """Handle /plan commands."""
+        action, _, value = argument.partition(" ")
+        action = action.lower().strip()
+        value = value.strip()
+
+        if action == "show":
+            plan_id = self._parse_plan_id(value)
+            if plan_id is None:
+                return CommandResponse("Usage: /plan show <id>")
+
+            plan = self.plan_store.get_plan(plan_id)
+            if plan is None:
+                return CommandResponse(f"Plan {plan_id} was not found.")
+
+            steps = self.plan_store.list_steps(plan_id)
+            return CommandResponse(self.agent_manager.format_plan(plan, steps))
+
+        if action == "next":
+            plan_id = self._parse_plan_id(value)
+            if plan_id is None:
+                return CommandResponse("Usage: /plan next <id>")
+
+            result = self.agent_manager.next_step(plan_id)
+            return CommandResponse(result.message)
+
+        if action == "done":
+            parts = value.split()
+            if len(parts) != 2:
+                return CommandResponse("Usage: /plan done <id> <step_number>")
+
+            plan_id = self._parse_plan_id(parts[0])
+            step_number = self._parse_plan_id(parts[1])
+            if plan_id is None or step_number is None:
+                return CommandResponse("Usage: /plan done <id> <step_number>")
+
+            result = self.agent_manager.complete_step(plan_id, step_number)
+            if result.success:
+                log_activity("plan step completed", f"plan={plan_id}, step={step_number}")
+
+            return CommandResponse(result.message)
+
+        if action == "status":
+            plan_id_text, _, status = value.partition(" ")
+            plan_id = self._parse_plan_id(plan_id_text)
+            status = status.lower().strip()
+
+            if plan_id is None or status not in PLAN_STATUSES:
+                return CommandResponse("Usage: /plan status <id> <active|paused|done>")
+
+            result = self.agent_manager.set_plan_status(plan_id, status)
+            if result.success:
+                log_activity("plan status changed", f"plan={plan_id}, status={status}")
+
+            return CommandResponse(result.message)
+
+        if action == "tasks":
+            plan_id = self._parse_plan_id(value)
+            if plan_id is None:
+                return CommandResponse("Usage: /plan tasks <id>")
+
+            result = self.agent_manager.convert_open_steps_to_tasks(plan_id)
+            if result.success:
+                log_activity("plan converted to tasks", f"plan={plan_id}, count={result.count}")
+
+            return CommandResponse(result.message)
+
+        return CommandResponse(
+            "Usage: /plan show <id>, /plan next <id>, /plan done <id> <step_number>, /plan status <id> <active|paused|done>, or /plan tasks <id>"
+        )
+
+    def _parse_plan_id(self, value: str) -> int | None:
+        """Parse a positive plan id."""
+        try:
+            plan_id = int(value)
+        except ValueError:
+            return None
+
+        if plan_id < 1:
+            return None
+
+        return plan_id
+
 
     def _split_in_folder(self, argument: str) -> tuple[str, str | None]:
         marker = " in "

@@ -23,6 +23,7 @@ class AICore:
         model: str = DEFAULT_MODEL,
         recent_tasks: list[str] | None = None,
         active_projects: list[str] | None = None,
+        active_agent_plans: list[str] | None = None,
     ) -> str:
         """Build a prompt and return the model response."""
         prompt = self._build_prompt(
@@ -30,6 +31,7 @@ class AICore:
             recent_memories,
             recent_tasks,
             active_projects,
+            active_agent_plans,
         )
         return self.client.generate(prompt, model=model)
 
@@ -39,6 +41,7 @@ class AICore:
         recent_memories: list[str] | None,
         recent_tasks: list[str] | None = None,
         active_projects: list[str] | None = None,
+        active_agent_plans: list[str] | None = None,
     ) -> str:
         prompt_parts = [SYSTEM_PROMPT]
 
@@ -53,6 +56,10 @@ class AICore:
         if recent_tasks:
             task_lines = [f"* {task}" for task in recent_tasks]
             prompt_parts.append("OPEN TASKS:\n" + "\n".join(task_lines))
+
+        if active_agent_plans:
+            plan_lines = [f"* {plan}" for plan in active_agent_plans]
+            prompt_parts.append("ACTIVE AGENT PLANS:\n" + "\n".join(plan_lines))
 
         prompt_parts.append(f"User message:\n{user_message}")
         prompt_parts.append("Axion response:")

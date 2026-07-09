@@ -1,5 +1,8 @@
 """Main terminal application for Axion."""
 
+from axion.agents.agent_manager import AgentManager
+from axion.agents.plan_store import PlanStore
+from axion.agents.planner_agent import PlannerAgent
 from axion.ai.ai_core import AICore
 from axion.ai.ollama_client import DEFAULT_MODEL
 from axion.commands.router import CommandRouter
@@ -44,16 +47,24 @@ class AxionApp:
         self.memory = SQLiteMemory()
         self.tasks = TaskStore()
         self.projects = ProjectStore()
+        self.plan_store = PlanStore()
         self.ai_core = AICore()
+        self.agent_manager = AgentManager(
+            self.plan_store,
+            PlannerAgent(self.ai_core),
+            self.tasks,
+        )
         self.current_model = DEFAULT_MODEL
         self.voice_enabled = False
         self.router = CommandRouter(
-            self.memory,
-            self.ai_core,
-            self.current_model,
-            self.tasks,
-            self.projects,
-            self.voice_enabled,
+            memory=self.memory,
+            ai_core=self.ai_core,
+            current_model=self.current_model,
+            task_store=self.tasks,
+            project_store=self.projects,
+            voice_enabled=self.voice_enabled,
+            plan_store=self.plan_store,
+            agent_manager=self.agent_manager,
         )
         self.running = True
 
@@ -71,6 +82,7 @@ class AxionApp:
         self.memory.initialize()
         self.tasks.initialize()
         self.projects.initialize()
+        self.plan_store.initialize()
         log_activity("app start")
         self.show_welcome()
 
@@ -112,6 +124,7 @@ class AxionApp:
                 model=self.current_model,
                 recent_tasks=self._recent_open_task_titles(),
                 active_projects=self._active_project_summaries(),
+                active_agent_plans=self._active_agent_plan_context(),
             )
         except Exception as error:
             return self._fallback_response(user_message, f"AI Core error: {error}")
@@ -157,6 +170,13 @@ class AxionApp:
                 summaries.append(project.name)
 
         return summaries
+
+    def _active_agent_plan_context(self, limit: int = 3) -> list[str]:
+        """Return active plan context for AI chat when available."""
+        try:
+            return self.plan_store.get_active_plan_context(limit)
+        except Exception:
+            return []
 
     def _fallback_response(self, user_message: str, reason: object) -> str:
         """Use the basic responder and log why the fallback was needed."""
