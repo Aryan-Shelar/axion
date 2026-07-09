@@ -1,6 +1,6 @@
 # Axion Roadmap
 
-## v0.5 Project Manager
+## v0.6 Safe Terminal Commands
 
 - Identity and personality foundation
 - Improved terminal welcome screen
@@ -15,14 +15,11 @@
 - SQLite task manager
 - SQLite project manager
 - Active project and open task context for AI chat
+- Allowlisted safe terminal command runner
 - Status reporting
 - Basic safety classification
 - Activity logging
 - Built-in fallback responses when the AI Core is unavailable
-
-## v0.6 Safe Terminal Commands
-
-- Add allowlisted safe terminal command support with confirmation
 
 ## v0.7 File Search
 

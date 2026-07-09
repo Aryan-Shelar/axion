@@ -28,6 +28,7 @@ def build_status(
             "AI Provider: Ollama",
             f"Current model: {current_model}",
             f"Ollama available: {available_text}",
+            "Safe terminal runner: enabled",
             f"Memory database: {memory.db_path}",
             f"Memories: {memory.count_memories()}",
             f"Notes: {memory.count_notes()}",

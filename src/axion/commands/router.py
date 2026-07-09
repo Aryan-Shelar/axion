@@ -26,6 +26,7 @@ from axion.tasks.task_store import TaskItem, TaskStore
 from axion.tools.app_launcher import launch_app, list_app_shortcuts
 from axion.tools.browser import open_url
 from axion.tools.folder_opener import open_folder
+from axion.tools.safe_runner import run_safe_command
 
 
 @dataclass(frozen=True)
@@ -85,6 +86,8 @@ class CommandRouter:
             return CommandResponse(self._apps())
         if command == "/app":
             return self._app(argument)
+        if command == "/run":
+            return self._run(argument)
         if command == "/task":
             return self._task_command(argument)
         if command == "/tasks":
@@ -136,6 +139,7 @@ class CommandRouter:
                 "/folder <path> - Open a folder on your computer",
                 "/app <name> - Open an allowlisted app",
                 "/apps - List available app shortcuts",
+                "/run <command> - Run a safe allowlisted terminal command",
                 "/task add <title> - Save a task",
                 "/tasks - List all tasks",
                 "/tasks open - List open tasks",
@@ -269,6 +273,20 @@ class CommandRouter:
             log_activity("app launch failed", f"{argument}: {message}")
 
         return CommandResponse(message)
+
+    def _run(self, argument: str) -> CommandResponse:
+        if not argument:
+            return CommandResponse("Usage: /run <command>")
+
+        result = run_safe_command(argument)
+        if result.status == "executed":
+            log_activity("safe command executed", argument)
+        elif result.status == "blocked":
+            log_activity("command blocked", argument)
+        elif result.status == "rejected":
+            log_activity("command rejected", argument)
+
+        return CommandResponse(result.message)
 
     def _task_command(self, argument: str) -> CommandResponse:
         action, _, value = argument.partition(" ")

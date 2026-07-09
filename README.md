@@ -2,9 +2,9 @@
 
 Axion is a private AI Operating System / AI Operating Layer. The long-term goal is a world-class personal assistant that can think, remember, plan, use tools, and control the computer safely.
 
-Axion v0.5 adds a Project Manager so Axion can track long-term projects, project notes, project folders, project status, and use active projects as AI context.
+Axion v0.6 adds a safe terminal runner. It can run a small allowlist of useful commands through `/run`, blocks dangerous commands, and never uses `shell=True`.
 
-## Current v0.5 Features
+## Current v0.6 Features
 
 - Local Ollama AI Core with default model `llama3.2:1b`
 - Memory and notes
@@ -12,8 +12,9 @@ Axion v0.5 adds a Project Manager so Axion can track long-term projects, project
 - Task manager for open and completed tasks
 - Active project and open task context for AI chat
 - Safe app launcher with allowlisted shortcuts
+- Safe terminal runner with allowlisted commands
 - Website and folder opening
-- Status report with AI, project, and task counts
+- Status report with AI, project, task, and safe runner details
 - Activity logging to `logs/axion.log`
 
 ## Run
@@ -55,6 +56,7 @@ python -m axion
 - `/task delete <id>`
 - `/apps`
 - `/app <name>`
+- `/run <command>`
 - `/open <url>`
 - `/folder <path>`
 - `/whoami`
@@ -64,17 +66,29 @@ python -m axion
 - `/model <name>`
 - `/clear`
 
+## Safe Run Commands
+
+The `/run` command only supports these allowlisted commands for now:
+
+- `git status`
+- `git branch`
+- `git log`
+- `dir`
+- `python --version`
+- `python -m axion`
+- `ollama list`
+- `ollama --version`
+
+Dangerous commands such as `del`, `rmdir`, `format`, `shutdown`, `powershell`, `rm`, and `taskkill` are blocked.
+
 ## Examples
 
 ```text
 /project create Axion :: AI Operating System built with Python and Ollama
-/projects
-/project show Axion
-/project folder Axion :: D:\Axion
-/project open Axion
-/project note Axion :: Build v0.5 Project Manager
-/project notes Axion
-/task add Push Axion v0.5 to GitHub
+/task add Push Axion v0.6 to GitHub
+/run git status
+/run python --version
+/run del test.txt
 /status
 what should I work on next?
 /exit
@@ -82,7 +96,6 @@ what should I work on next?
 
 ## Roadmap
 
-- v0.6 Safe Terminal Commands
 - v0.7 File Search
 - v0.8 Voice
 - v0.9 Browser Automation
