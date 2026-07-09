@@ -18,9 +18,11 @@ def build_status(
     ollama_available: bool,
     task_store: TaskStore,
     project_store: ProjectStore,
+    voice_enabled: bool,
 ) -> str:
     """Build a readable status report for the terminal."""
     available_text = "yes" if ollama_available else "no"
+    voice_text = "enabled" if voice_enabled else "disabled"
 
     return "\n".join(
         [
@@ -31,6 +33,7 @@ def build_status(
             f"Ollama available: {available_text}",
             "Safe terminal runner: enabled",
             "File manager: enabled",
+            f"Voice output: {voice_text}",
             f"Axion trash folder: {trash_root()}",
             f"Memory database: {memory.db_path}",
             f"Memories: {memory.count_memories()}",

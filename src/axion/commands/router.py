@@ -35,6 +35,7 @@ from axion.tools.file_manager import (
 )
 from axion.tools.folder_opener import open_folder
 from axion.tools.safe_runner import run_safe_command
+from axion.voice.speaker import speak_text
 
 
 @dataclass(frozen=True)
@@ -55,12 +56,14 @@ class CommandRouter:
         current_model: str = DEFAULT_MODEL,
         task_store: TaskStore | None = None,
         project_store: ProjectStore | None = None,
+        voice_enabled: bool = False,
     ) -> None:
         self.memory = memory
         self.ai_core = ai_core or AICore()
         self.current_model = current_model
         self.task_store = task_store or TaskStore()
         self.project_store = project_store or ProjectStore()
+        self.voice_enabled = voice_enabled
 
     def handle(self, user_input: str) -> CommandResponse:
         """Route input to a command handler."""
@@ -96,6 +99,10 @@ class CommandRouter:
             return self._app(argument)
         if command == "/run":
             return self._run(argument)
+        if command == "/say":
+            return self._say(argument)
+        if command == "/voice":
+            return self._voice(argument)
         if command == "/find":
             return self._find(argument)
         if command == "/find-ext":
@@ -125,6 +132,7 @@ class CommandRouter:
                     ollama_available,
                     self.task_store,
                     self.project_store,
+                    self.voice_enabled,
                 )
             )
         if command == "/clear":
@@ -158,6 +166,10 @@ class CommandRouter:
                 "/app <name> - Open an allowlisted app",
                 "/apps - List available app shortcuts",
                 "/run <command> - Run a safe allowlisted terminal command",
+                "/say <text> - Speak text aloud",
+                "/voice - Show voice mode status",
+                "/voice on - Enable voice mode for normal chat replies",
+                "/voice off - Disable voice mode",
                 "/find <query> - Search for files by name",
                 "/find <query> in <folder> - Search for files in a folder",
                 "/find-ext <extension> - Search for files by extension",
@@ -313,6 +325,36 @@ class CommandRouter:
             log_activity("command rejected", argument)
 
         return CommandResponse(result.message)
+
+    def _say(self, argument: str) -> CommandResponse:
+        if not argument:
+            return CommandResponse("Usage: /say <text>")
+
+        result = speak_text(argument)
+        if result.success:
+            log_activity("voice spoken", argument)
+        else:
+            log_activity("voice failed", result.message)
+
+        return CommandResponse(result.message)
+
+    def _voice(self, argument: str) -> CommandResponse:
+        normalized = argument.strip().lower()
+        if not normalized:
+            status = "on" if self.voice_enabled else "off"
+            return CommandResponse(f"Voice mode is {status}.")
+
+        if normalized == "on":
+            self.voice_enabled = True
+            log_activity("voice mode enabled")
+            return CommandResponse("Voice mode enabled.")
+
+        if normalized == "off":
+            self.voice_enabled = False
+            log_activity("voice mode disabled")
+            return CommandResponse("Voice mode disabled.")
+
+        return CommandResponse("Usage: /voice, /voice on, or /voice off")
 
     def _find(self, argument: str) -> CommandResponse:
         query, folder = self._split_in_folder(argument)

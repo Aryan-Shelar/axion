@@ -1,6 +1,6 @@
 # Axion Roadmap
 
-## v0.7 Safe File Manager
+## v0.8 Voice Output
 
 - Identity and personality foundation
 - Improved terminal welcome screen
@@ -20,15 +20,12 @@
 - Safe file moves without overwrite
 - Axion Trash for reversible file cleanup
 - Screenshot preview and confirmed cleanup
+- Optional Windows text-to-speech output
+- Voice mode for normal AI chat replies
 - Status reporting
 - Basic safety classification
 - Activity logging
 - Built-in fallback responses when the AI Core is unavailable
-
-## v0.8 Voice
-
-- Add voice input and output experiments
-- Keep text mode fully supported
 
 ## v0.9 Browser Automation
 

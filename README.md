@@ -2,9 +2,9 @@
 
 Axion is a private AI Operating System / AI Operating Layer. The long-term goal is a world-class personal assistant that can think, remember, plan, use tools, and control the computer safely.
 
-Axion v0.7 adds a Safe File Manager. It can search for files, move files without overwriting, and move unwanted files into Axion Trash instead of permanently deleting them.
+Axion v0.8 adds safe voice output on Windows. Axion can speak text with `/say` and can optionally speak normal AI chat replies when voice mode is on.
 
-## Current v0.7 Features
+## Current v0.8 Features
 
 - Local Ollama AI Core with default model `llama3.2:1b`
 - Memory and notes
@@ -14,8 +14,9 @@ Axion v0.7 adds a Safe File Manager. It can search for files, move files without
 - Safe app launcher with allowlisted shortcuts
 - Safe terminal runner with allowlisted commands
 - Safe File Manager for search, move, trash, and screenshot cleanup
+- Optional Windows voice output for normal chat replies
 - Website and folder opening
-- Status report with AI, project, task, runner, and file manager details
+- Status report with AI, project, task, runner, file manager, and voice details
 - Activity logging to `logs/axion.log`
 
 ## Run
@@ -58,6 +59,10 @@ python -m axion
 - `/apps`
 - `/app <name>`
 - `/run <command>`
+- `/say <text>`
+- `/voice`
+- `/voice on`
+- `/voice off`
 - `/find <query>`
 - `/find <query> in <folder>`
 - `/find-ext <extension>`
@@ -77,7 +82,7 @@ python -m axion
 
 ## Safe File Manager
 
-Axion v0.7 never permanently deletes files. The `/trash` command and screenshot cleaner move files into:
+Axion never permanently deletes files. The `/trash` command and screenshot cleaner move files into:
 
 ```text
 data/trash/YYYY-MM-DD_HHMMSS/
@@ -90,6 +95,17 @@ File manager safety rules:
 - Files only, no folder moves yet
 - Trash operations are reversible from Axion Trash
 - Screenshot cleanup requires `/screenshots clean --confirm`
+
+## Voice Output
+
+Voice output is optional and Windows-only in v0.8. Axion uses PowerShell with `System.Speech.Synthesis` through Python's standard library. Microphone input is not included yet.
+
+Examples:
+
+- `/say Hello Shelar`
+- `/voice`
+- `/voice on`
+- `/voice off`
 
 ## Safe Run Commands
 
@@ -109,6 +125,12 @@ Dangerous commands such as `del`, `rmdir`, `format`, `shutdown`, `powershell`, `
 ## Examples
 
 ```text
+/voice
+/say Hello Shelar, Axion can speak now.
+/voice on
+hello axion
+/voice off
+hello again
 /find axion
 /find-ext py in D:\Axion
 /screenshots preview
@@ -124,6 +146,5 @@ If a test file does not exist, Axion shows a friendly error and keeps running.
 
 ## Roadmap
 
-- v0.8 Voice
 - v0.9 Browser Automation
 - v1.0 Agent System

@@ -1,6 +1,6 @@
 """Safe file search, move, and trash helpers for Axion.
 
-Axion v0.7 never permanently deletes files. Trashing means moving a file into
+Axion never permanently deletes files. Trashing means moving a file into
 Axion's local trash folder so the operation stays reversible.
 """
 

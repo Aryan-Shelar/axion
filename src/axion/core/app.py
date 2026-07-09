@@ -10,6 +10,7 @@ from axion.memory.sqlite_memory import SQLiteMemory
 from axion.projects.project_store import ProjectStore
 from axion.tasks.task_store import TaskStore
 from axion.utils.text import divider
+from axion.voice.speaker import speak_text
 
 
 def is_valid_ai_response(response: str) -> bool:
@@ -45,12 +46,14 @@ class AxionApp:
         self.projects = ProjectStore()
         self.ai_core = AICore()
         self.current_model = DEFAULT_MODEL
+        self.voice_enabled = False
         self.router = CommandRouter(
             self.memory,
             self.ai_core,
             self.current_model,
             self.tasks,
             self.projects,
+            self.voice_enabled,
         )
         self.running = True
 
@@ -82,11 +85,15 @@ class AxionApp:
                 continue
 
             if not user_input.startswith("/"):
-                print(self._handle_normal_chat(user_input))
+                reply = self._handle_normal_chat(user_input)
+                print(reply)
+                if self.voice_enabled:
+                    self._speak_normal_reply(reply)
                 continue
 
             response = self.router.handle(user_input)
             self.current_model = self.router.current_model
+            self.voice_enabled = self.router.voice_enabled
             if response.should_exit:
                 self.running = False
                 log_activity("app exit")
@@ -155,6 +162,16 @@ class AxionApp:
         """Use the basic responder and log why the fallback was needed."""
         log_activity("Using fallback basic_responder because", str(reason))
         return respond_to_chat(user_message)
+
+    def _speak_normal_reply(self, reply: str) -> None:
+        """Speak normal chat replies when voice mode is enabled."""
+        result = speak_text(reply)
+        if result.success:
+            log_activity("voice spoken", "normal chat reply")
+            return
+
+        log_activity("voice failed", result.message)
+        print(f"Voice output failed: {result.message}")
 
     def _fallback_reason_for_response(self, response: str) -> str:
         """Return a clear log reason for an invalid AI Core response."""
