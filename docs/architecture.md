@@ -1,6 +1,6 @@
 # Axion Architecture
 
-Axion v0.8 is a modular Python terminal app that uses only the Python standard library. It keeps the local Ollama AI Core, projects, tasks, memory, notes, safe tools, and Safe File Manager, then adds optional Windows voice output.
+Axion v0.9 is a modular Python terminal app that uses only the Python standard library. It keeps the local Ollama AI Core, projects, tasks, memory, notes, safe tools, Safe File Manager, and voice output, then adds Browser Research Lite.
 
 ## Core
 
@@ -90,12 +90,12 @@ ACTIVE PROJECTS:
 * Axion: AI Operating System built with Python and Ollama
 
 OPEN TASKS:
-* Push Axion v0.8 to GitHub
+* Push Axion v0.9 to GitHub
 ```
 
 ## Tools
 
-Tools are safe, focused helpers that interact with the computer. In v0.8, Axion can open websites, folders, saved project folders, allowlisted apps, allowlisted terminal commands, and safe file operations.
+Tools are safe, focused helpers that interact with the computer. In v0.9, Axion can open websites, folders, saved project folders, allowlisted apps, allowlisted terminal commands, safe file operations, and browser research searches.
 
 Important files:
 
@@ -104,6 +104,20 @@ Important files:
 - `src/axion/tools/app_launcher.py`
 - `src/axion/tools/safe_runner.py`
 - `src/axion/tools/file_manager.py`
+- `src/axion/tools/web_research.py`
+
+## Browser Research Lite
+
+Browser Research Lite powers `/web search`, `/web open`, `/web youtube`, and `/web github`. It uses `webbrowser` to open browser pages and `urllib.parse.quote_plus` to safely encode search queries.
+
+In v0.9, Axion only opens safe browser URLs and search pages. It does not scrape websites, fill forms, click buttons, or control website sessions yet.
+
+Supported destinations:
+
+- Google search
+- YouTube search
+- GitHub search
+- Direct `http` and `https` URLs
 
 ## Voice Output
 
@@ -116,7 +130,7 @@ Important files:
 
 Voice output is optional. When voice mode is on, normal AI chat replies are spoken aloud after they are printed. Command responses are not automatically spoken yet, except `/say`.
 
-Microphone input is not included in v0.8. Voice input can be added later with separate safety and privacy controls.
+Microphone input is not included yet. Voice input can be added later with separate safety and privacy controls.
 
 ## App Launcher
 
@@ -164,13 +178,13 @@ The safety layer classifies future actions as:
 - `needs_confirmation`
 - `blocked`
 
-Dangerous actions are not executed in v0.8. This module exists so future automation has a clear safety checkpoint.
+Dangerous actions are not executed in v0.9. This module exists so future automation has a clear safety checkpoint.
 
 ## Logs
 
 Important actions are logged to `logs/axion.log`. The log folder is created automatically when Axion starts or writes its first log entry.
 
-Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, project changes, safe command execution, command blocks, command rejections, file searches, file moves, file trashing, screenshot cleanup, file operation failures, voice output, voice failures, voice mode changes, AI response routing, model changes, and app exit.
+Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, project changes, safe command execution, command blocks, command rejections, file searches, file moves, file trashing, screenshot cleanup, file operation failures, web searches, opened web URLs, voice output, voice failures, voice mode changes, AI response routing, model changes, and app exit.
 
 ## Future Agents
 

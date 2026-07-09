@@ -13,4 +13,4 @@ The long-term vision is a trusted local layer that can:
 - Coordinate multiple AI agents
 - Keep the user in control
 
-Version 0.8 adds safe voice output while preserving the foundation: local AI Core, identity, local memory, tasks, projects, command routing, basic tools, safe terminal commands, safe file management, safety classification, status reporting, fallback responses, and activity logs.
+Version 0.9 adds Browser Research Lite while preserving the foundation: local AI Core, identity, local memory, tasks, projects, command routing, basic tools, safe terminal commands, safe file management, voice output, safety classification, status reporting, fallback responses, and activity logs.

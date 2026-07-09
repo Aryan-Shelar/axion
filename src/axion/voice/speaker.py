@@ -68,6 +68,7 @@ class Speaker:
                 env=env,
                 capture_output=True,
                 text=True,
+                shell=False,
                 timeout=30,
             )
         except FileNotFoundError:

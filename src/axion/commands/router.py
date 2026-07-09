@@ -35,6 +35,12 @@ from axion.tools.file_manager import (
 )
 from axion.tools.folder_opener import open_folder
 from axion.tools.safe_runner import run_safe_command
+from axion.tools.web_research import (
+    open_github_search,
+    open_google_search,
+    open_web_url,
+    open_youtube_search,
+)
 from axion.voice.speaker import speak_text
 
 
@@ -103,6 +109,8 @@ class CommandRouter:
             return self._say(argument)
         if command == "/voice":
             return self._voice(argument)
+        if command == "/web":
+            return self._web(argument)
         if command == "/find":
             return self._find(argument)
         if command == "/find-ext":
@@ -170,6 +178,10 @@ class CommandRouter:
                 "/voice - Show voice mode status",
                 "/voice on - Enable voice mode for normal chat replies",
                 "/voice off - Disable voice mode",
+                "/web search <query> - Open a Google search",
+                "/web open <url> - Open a safe browser URL",
+                "/web youtube <query> - Open a YouTube search",
+                "/web github <query> - Open a GitHub search",
                 "/find <query> - Search for files by name",
                 "/find <query> in <folder> - Search for files in a folder",
                 "/find-ext <extension> - Search for files by extension",
@@ -355,6 +367,39 @@ class CommandRouter:
             return CommandResponse("Voice mode disabled.")
 
         return CommandResponse("Usage: /voice, /voice on, or /voice off")
+
+    def _web(self, argument: str) -> CommandResponse:
+        action, _, value = argument.partition(" ")
+        action = action.lower().strip()
+        value = value.strip()
+
+        if action == "search":
+            result = open_google_search(value)
+            if result.success:
+                log_activity("web search opened", result.url)
+            return CommandResponse(result.message)
+
+        if action == "open":
+            result = open_web_url(value)
+            if result.success:
+                log_activity("web url opened", result.url)
+            return CommandResponse(result.message)
+
+        if action == "youtube":
+            result = open_youtube_search(value)
+            if result.success:
+                log_activity("youtube search opened", result.url)
+            return CommandResponse(result.message)
+
+        if action == "github":
+            result = open_github_search(value)
+            if result.success:
+                log_activity("github search opened", result.url)
+            return CommandResponse(result.message)
+
+        return CommandResponse(
+            "Usage: /web search <query>, /web open <url>, /web youtube <query>, or /web github <query>"
+        )
 
     def _find(self, argument: str) -> CommandResponse:
         query, folder = self._split_in_folder(argument)

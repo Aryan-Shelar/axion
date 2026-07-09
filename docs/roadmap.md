@@ -1,6 +1,6 @@
 # Axion Roadmap
 
-## v0.8 Voice Output
+## v0.9 Browser Research Lite
 
 - Identity and personality foundation
 - Improved terminal welcome screen
@@ -22,12 +22,14 @@
 - Screenshot preview and confirmed cleanup
 - Optional Windows text-to-speech output
 - Voice mode for normal AI chat replies
+- Safe Google, YouTube, and GitHub search opening
+- Safe direct browser URL opening
 - Status reporting
 - Basic safety classification
 - Activity logging
 - Built-in fallback responses when the AI Core is unavailable
 
-## v0.9 Browser Automation
+## Future Browser Automation
 
 - Add browser automation helpers
 - Keep user-visible confirmation for important actions

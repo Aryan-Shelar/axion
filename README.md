@@ -2,9 +2,9 @@
 
 Axion is a private AI Operating System / AI Operating Layer. The long-term goal is a world-class personal assistant that can think, remember, plan, use tools, and control the computer safely.
 
-Axion v0.8 adds safe voice output on Windows. Axion can speak text with `/say` and can optionally speak normal AI chat replies when voice mode is on.
+Axion v0.9 adds Browser Research Lite. Axion can safely open useful web searches and URLs without scraping, form filling, or browser automation.
 
-## Current v0.8 Features
+## Current v0.9 Features
 
 - Local Ollama AI Core with default model `llama3.2:1b`
 - Memory and notes
@@ -15,8 +15,9 @@ Axion v0.8 adds safe voice output on Windows. Axion can speak text with `/say` a
 - Safe terminal runner with allowlisted commands
 - Safe File Manager for search, move, trash, and screenshot cleanup
 - Optional Windows voice output for normal chat replies
+- Browser Research Lite for Google, YouTube, GitHub, and safe URL opening
 - Website and folder opening
-- Status report with AI, project, task, runner, file manager, and voice details
+- Status report with AI, project, task, runner, file manager, voice, and browser research details
 - Activity logging to `logs/axion.log`
 
 ## Run
@@ -63,6 +64,10 @@ python -m axion
 - `/voice`
 - `/voice on`
 - `/voice off`
+- `/web search <query>`
+- `/web open <url>`
+- `/web youtube <query>`
+- `/web github <query>`
 - `/find <query>`
 - `/find <query> in <folder>`
 - `/find-ext <extension>`
@@ -98,7 +103,7 @@ File manager safety rules:
 
 ## Voice Output
 
-Voice output is optional and Windows-only in v0.8. Axion uses PowerShell with `System.Speech.Synthesis` through Python's standard library. Microphone input is not included yet.
+Voice output is optional and Windows-only. Axion uses PowerShell with `System.Speech.Synthesis` through Python's standard library. Microphone input is not included yet.
 
 Examples:
 
@@ -106,6 +111,17 @@ Examples:
 - `/voice`
 - `/voice on`
 - `/voice off`
+
+## Browser Research Lite
+
+Browser Research Lite opens safe browser URLs and search pages. It does not scrape websites, fill forms, click pages, or control browser sessions yet.
+
+Examples:
+
+- `/web search AI automation tools`
+- `/web youtube Python beginner tutorial`
+- `/web github ollama python`
+- `/web open github.com`
 
 ## Safe Run Commands
 
@@ -125,6 +141,10 @@ Dangerous commands such as `del`, `rmdir`, `format`, `shutdown`, `powershell`, `
 ## Examples
 
 ```text
+/web search AI automation tools
+/web youtube Python beginner tutorial
+/web github ollama python
+/web open github.com
 /voice
 /say Hello Shelar, Axion can speak now.
 /voice on
@@ -146,5 +166,5 @@ If a test file does not exist, Axion shows a friendly error and keeps running.
 
 ## Roadmap
 
-- v0.9 Browser Automation
+- Future Browser Automation
 - v1.0 Agent System

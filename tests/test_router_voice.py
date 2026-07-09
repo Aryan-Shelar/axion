@@ -34,7 +34,7 @@ class RouterVoiceTests(unittest.TestCase):
     def test_say_speaks_even_when_voice_mode_is_off(
         self, mock_speak_text, mock_log_activity
     ) -> None:
-        mock_speak_text.return_value = VoiceResult("Spoken.", True)
+        mock_speak_text.return_value = VoiceResult(True, "Spoken.")
 
         with TemporaryDirectory() as temp_dir:
             router = make_router(Path(temp_dir) / "axion.db")

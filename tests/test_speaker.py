@@ -30,8 +30,8 @@ class SpeakerTests(unittest.TestCase):
         mock_run.assert_called_once()
         args, kwargs = mock_run.call_args
         self.assertEqual(args[0][0], "powershell")
-        self.assertIn("System.Speech.Synthesis", args[0][4])
-        self.assertEqual(args[0][-1], "Hello Shelar")
+        self.assertIn("System.Speech.Synthesis", args[0][5])
+        self.assertEqual(kwargs["env"]["AXION_SPEAK_TEXT"], "Hello Shelar")
         self.assertIs(kwargs["shell"], False)
 
     @patch("axion.voice.speaker.subprocess.run")
@@ -59,7 +59,7 @@ class SpeakerTests(unittest.TestCase):
         result = speak_text("Hello")
 
         self.assertFalse(result.success)
-        self.assertEqual(result.message, "Axion could not speak: speech failed")
+        self.assertEqual(result.message, "Voice output failed: speech failed")
 
 
 if __name__ == "__main__":

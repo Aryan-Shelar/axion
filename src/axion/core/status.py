@@ -33,6 +33,7 @@ def build_status(
             f"Ollama available: {available_text}",
             "Safe terminal runner: enabled",
             "File manager: enabled",
+            "Browser research: enabled",
             f"Voice output: {voice_text}",
             f"Axion trash folder: {trash_root()}",
             f"Memory database: {memory.db_path}",
