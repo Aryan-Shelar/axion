@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from axion.agents.agent_manager import AgentManager
+from axion.agents.execution_agent import ExecutionAgent
 from axion.agents.plan_store import PLAN_STATUSES, PlanStore
 from axion.agents.planner_agent import PlannerAgent
 from axion.ai.ai_core import AICore
@@ -82,6 +83,11 @@ class CommandRouter:
             self.task_store,
         )
         self.plan_store.initialize()
+        self.execution_agent = ExecutionAgent(
+            self.plan_store,
+            self.task_store,
+            self.project_store,
+        )
 
     def handle(self, user_input: str) -> CommandResponse:
         """Route input to a command handler."""
@@ -525,6 +531,7 @@ class CommandRouter:
                 "\n".join(
                     [
                         "Agent Mode: enabled",
+                        "Agent execution: enabled",
                         f"Active plans: {active_count}",
                         f"Paused plans: {paused_count}",
                         f"Done plans: {done_count}",
@@ -544,7 +551,47 @@ class CommandRouter:
 
             return CommandResponse(result.message)
 
-        return CommandResponse("Usage: /agent status or /agent plan <goal>")
+        if action == "execute":
+            return self._agent_execute(value)
+
+        return CommandResponse(
+            "Usage: /agent status, /agent plan <goal>, or /agent execute <plan_id>"
+        )
+
+    def _agent_execute(self, value: str) -> CommandResponse:
+        """Preview or execute the next safe action for a plan."""
+        parts = value.split()
+        if not parts:
+            return CommandResponse(
+                "Usage: /agent execute <plan_id> or /agent execute <plan_id> --confirm"
+            )
+
+        try:
+            plan_id = int(parts[0])
+        except ValueError:
+            return CommandResponse(
+                "Usage: /agent execute <plan_id> or /agent execute <plan_id> --confirm"
+            )
+
+        if plan_id < 1:
+            return CommandResponse(
+                "Usage: /agent execute <plan_id> or /agent execute <plan_id> --confirm"
+            )
+
+        confirm = "--confirm" in parts[1:]
+        result = self.execution_agent.execute_next_step(plan_id, confirm=confirm)
+
+        if confirm:
+            if result.success:
+                log_activity("agent execution completed", f"plan={plan_id}")
+                log_activity("agent step marked done by executor", f"plan={plan_id}")
+            else:
+                log_activity("agent execution failed", f"plan={plan_id}")
+        else:
+            log_activity("agent execution previewed", f"plan={plan_id}")
+
+        return CommandResponse(result.message)
+
 
     def _plans_command(self, argument: str) -> CommandResponse:
         """Handle /plans commands."""

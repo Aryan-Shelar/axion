@@ -38,6 +38,7 @@ def build_status(
         "Browser research: enabled",
         f"Voice output: {'enabled' if voice_enabled else 'disabled'}",
         "Agent mode: enabled",
+        "Agent execution: enabled",
         f"Axion trash folder: {Path('data/trash').resolve()}",
         f"Memory database: {DEFAULT_DB_PATH.resolve()}",
     ]
