@@ -2,22 +2,22 @@
 
 Axion is a private AI Operating System / AI Operating Layer. The long-term goal is a world-class personal assistant that can think, remember, plan, use tools, and control the computer safely.
 
-Axion v0.9 adds Browser Research Lite. Axion can safely open useful web searches and URLs without scraping, form filling, or browser automation.
+Axion v1.2 adds Trash Manager + Restore System. Axion can safely move files to Axion Trash, inspect trash metadata, restore files without overwriting, and preview permanent trash deletion.
 
-## Current v0.9 Features
+## Current v1.2 Features
 
 - Local Ollama AI Core with default model `llama3.2:1b`
 - Memory and notes
-- Project manager with statuses, folders, and notes
-- Task manager for open and completed tasks
-- Active project and open task context for AI chat
-- Safe app launcher with allowlisted shortcuts
-- Safe terminal runner with allowlisted commands
-- Safe File Manager for search, move, trash, and screenshot cleanup
-- Optional Windows voice output for normal chat replies
-- Browser Research Lite for Google, YouTube, GitHub, and safe URL opening
-- Website and folder opening
-- Status report with AI, project, task, runner, file manager, voice, and browser research details
+- Project manager
+- Task manager
+- Safe app launcher
+- Safe terminal runner
+- Safe File Manager
+- Trash Manager and Restore System
+- Browser Research Lite
+- Optional Windows voice output
+- Agent Mode
+- Agent Execution Mode
 - Activity logging to `logs/axion.log`
 
 ## Run
@@ -168,3 +168,22 @@ If a test file does not exist, Axion shows a friendly error and keeps running.
 
 - Future Browser Automation
 - v1.0 Agent System
+
+## Axion v1.2 - Trash Manager + Restore System
+
+Commands:
+
+```text
+/trash-list
+/trash-show <id>
+/restore <id>
+/restore <id> :: <destination_folder>
+/empty-trash preview
+/empty-trash --confirm
+```
+
+Safety rules:
+
+- Restore never overwrites existing files.
+- Empty trash only touches Axion Trash.
+- Permanent deletion requires explicit confirmation.
