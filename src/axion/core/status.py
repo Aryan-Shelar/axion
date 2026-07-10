@@ -25,6 +25,7 @@ def build_status(
     project_store=None,
     voice_enabled: bool = False,
     plan_store=None,
+    trash_manager=None,
 ) -> str:
     """Return a human-readable Axion system status."""
     lines = [
@@ -35,6 +36,7 @@ def build_status(
         f"Ollama available: {'yes' if ollama_available else 'no'}",
         "Safe terminal runner: enabled",
         "File manager: enabled",
+        "Trash manager: enabled",
         "Browser research: enabled",
         f"Voice output: {'enabled' if voice_enabled else 'disabled'}",
         "Agent mode: enabled",
@@ -73,6 +75,14 @@ def build_status(
                 f"Active plans: {_safe_count(plan_store, 'count_plans', 'active')}",
                 f"Paused plans: {_safe_count(plan_store, 'count_plans', 'paused')}",
                 f"Done plans: {_safe_count(plan_store, 'count_plans', 'done')}",
+            ]
+        )
+
+    if trash_manager is not None:
+        lines.extend(
+            [
+                f"Trashed files: {_safe_count(trash_manager, 'count_trashed')}",
+                f"Restored files: {_safe_count(trash_manager, 'count_restored')}",
             ]
         )
 

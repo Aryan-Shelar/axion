@@ -1,6 +1,6 @@
 """Browser Research Lite helpers for Axion.
 
-v0.9 only opens useful browser searches and safe URLs. It does not scrape
+Axion only opens useful browser searches and safe URLs. It does not scrape
 websites, fill forms, click pages, or automate browsing sessions.
 """
 

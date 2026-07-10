@@ -39,6 +39,7 @@ from axion.tools.file_manager import (
 )
 from axion.tools.folder_opener import open_folder
 from axion.tools.safe_runner import run_safe_command
+from axion.tools.trash_manager import TrashManager
 from axion.tools.web_research import (
     open_github_search,
     open_google_search,
@@ -69,6 +70,7 @@ class CommandRouter:
         voice_enabled: bool = False,
         plan_store: PlanStore | None = None,
         agent_manager: AgentManager | None = None,
+        trash_manager: TrashManager | None = None,
     ) -> None:
         self.memory = memory
         self.ai_core = ai_core or AICore()
@@ -76,13 +78,14 @@ class CommandRouter:
         self.task_store = task_store or TaskStore()
         self.project_store = project_store or ProjectStore()
         self.voice_enabled = voice_enabled
-        self.plan_store = plan_store or PlanStore()
+        self.plan_store = plan_store or PlanStore(self.task_store.db_path)
         self.agent_manager = agent_manager or AgentManager(
             self.plan_store,
             PlannerAgent(self.ai_core),
             self.task_store,
         )
         self.plan_store.initialize()
+        self.trash_manager = trash_manager or TrashManager()
         self.execution_agent = ExecutionAgent(
             self.plan_store,
             self.task_store,
@@ -139,6 +142,14 @@ class CommandRouter:
             return self._trash(argument)
         if command == "/screenshots":
             return self._screenshots(argument)
+        if command == "/trash-list":
+            return self._trash_list()
+        if command == "/trash-show":
+            return self._trash_show(argument)
+        if command == "/restore":
+            return self._restore(argument)
+        if command == "/empty-trash":
+            return self._empty_trash(argument)
         if command == "/agent":
             return self._agent_command(argument)
         if command == "/plans":
@@ -166,6 +177,7 @@ class CommandRouter:
                     self.project_store,
                     self.voice_enabled,
                     self.plan_store,
+                    self.trash_manager,
                 )
             )
         if command == "/clear":
@@ -215,6 +227,12 @@ class CommandRouter:
                 "/trash <file_path> - Move a file to Axion Trash",
                 "/screenshots preview - Preview screenshot-like files",
                 "/screenshots clean --confirm - Move screenshot-like files to Axion Trash",
+                "/trash-list - List tracked and orphan trash files",
+                "/trash-show <id> - Show trash item details",
+                "/restore <id> - Restore a trash item to its original folder",
+                "/restore <id> :: <destination_folder> - Restore a trash item elsewhere",
+                "/empty-trash preview - Preview permanent trash deletion",
+                "/empty-trash --confirm - Permanently empty Axion Trash",
                 "/agent status - Show Agent Mode status",
                 "/agent plan <goal> - Create and save an agent plan",
                 "/plans - List all agent plans",
@@ -515,6 +533,57 @@ class CommandRouter:
             return CommandResponse(result.message)
 
         return CommandResponse("Usage: /screenshots preview or /screenshots clean --confirm")
+
+
+    def _trash_list(self) -> CommandResponse:
+        result = self.trash_manager.list_trash()
+        log_activity("trash listed", f"count={result.count}")
+        return CommandResponse(result.message)
+
+    def _trash_show(self, argument: str) -> CommandResponse:
+        trash_id = self._parse_plan_id(argument)
+        if trash_id is None:
+            return CommandResponse("Usage: /trash-show <id>")
+
+        result = self.trash_manager.show_item(trash_id)
+        if result.success:
+            log_activity("trash item shown", f"id={trash_id}")
+
+        return CommandResponse(result.message)
+
+    def _restore(self, argument: str) -> CommandResponse:
+        left, destination = self._split_double_colon(argument)
+        trash_id = self._parse_plan_id(left)
+        if trash_id is None:
+            return CommandResponse("Usage: /restore <id> or /restore <id> :: <destination_folder>")
+
+        result = self.trash_manager.restore_item(trash_id, destination or None)
+        if result.success:
+            log_activity("file restored", f"id={trash_id}")
+        else:
+            log_activity("restore failed", f"id={trash_id}: {result.message}")
+
+        return CommandResponse(result.message)
+
+    def _empty_trash(self, argument: str) -> CommandResponse:
+        normalized = " ".join(argument.lower().split())
+
+        if normalized == "preview":
+            result = self.trash_manager.empty_preview()
+            log_activity("empty trash previewed", f"count={result.count}")
+            return CommandResponse(result.message)
+
+        if normalized == "--confirm":
+            result = self.trash_manager.empty_trash(confirm=True)
+            if result.success:
+                log_activity("trash emptied", f"count={result.count}")
+            else:
+                log_activity("empty trash blocked", result.message)
+            return CommandResponse(result.message)
+
+        result = self.trash_manager.empty_trash(confirm=False)
+        log_activity("empty trash blocked", result.message)
+        return CommandResponse(result.message)
 
 
     def _agent_command(self, argument: str) -> CommandResponse:

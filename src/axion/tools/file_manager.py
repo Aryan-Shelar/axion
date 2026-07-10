@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 import shutil
 
+from axion.tools.trash_manager import TrashManager
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 TRASH_ROOT = PROJECT_ROOT / "data" / "trash"
@@ -164,6 +166,7 @@ def trash_file(file_path: str) -> FileManagerResult:
     if not result.success:
         return result
 
+    _record_trash_metadata(source, result.detail)
     return FileManagerResult(
         f"File moved to Axion Trash: {result.detail}",
         True,
@@ -208,6 +211,7 @@ def clean_screenshots(confirm: bool) -> FileManagerResult:
     for screenshot in screenshots:
         result = _move_file_to_folder(screenshot, trash_folder)
         if result.success:
+            _record_trash_metadata(screenshot, result.detail)
             moved_count += 1
         else:
             failed_count += 1
@@ -352,6 +356,10 @@ def _move_file_to_folder(source: Path, destination_folder: Path) -> FileManagerR
         return FileManagerResult(f"I could not move that file: {error}", False)
 
     return FileManagerResult(f"File moved to: {target}", True, str(target))
+
+
+def _record_trash_metadata(original_path: Path, trash_path: str) -> None:
+    TrashManager(TRASH_ROOT).record_trashed_file(str(original_path), trash_path)
 
 
 def _new_trash_folder() -> Path:
