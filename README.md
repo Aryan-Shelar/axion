@@ -2,9 +2,9 @@
 
 Axion is a private AI Operating System / AI Operating Layer. The long-term goal is a world-class personal assistant that can think, remember, plan, use tools, and control the computer safely.
 
-Axion v1.2 adds Trash Manager + Restore System. Axion can safely move files to Axion Trash, inspect trash metadata, restore files without overwriting, and preview permanent trash deletion.
+Axion v1.3 adds Smart Laptop Organizer. Axion can scan messy folders, preview suggested file moves, apply them only after explicit confirmation, and undo the latest organizer move session.
 
-## Current v1.2 Features
+## Current v1.3 Features
 
 - Local Ollama AI Core with default model `llama3.2:1b`
 - Memory and notes
@@ -14,6 +14,7 @@ Axion v1.2 adds Trash Manager + Restore System. Axion can safely move files to A
 - Safe terminal runner
 - Safe File Manager
 - Trash Manager and Restore System
+- Smart Laptop Organizer
 - Browser Research Lite
 - Optional Windows voice output
 - Agent Mode
@@ -76,6 +77,22 @@ python -m axion
 - `/trash <file_path>`
 - `/screenshots preview`
 - `/screenshots clean --confirm`
+- `/trash-list`
+- `/trash-show <id>`
+- `/restore <id>`
+- `/restore <id> :: <destination_folder>`
+- `/empty-trash preview`
+- `/empty-trash --confirm`
+- `/organize scan downloads`
+- `/organize scan desktop`
+- `/organize scan documents`
+- `/organize scan pictures`
+- `/organize scan <folder_path>`
+- `/organize preview`
+- `/organize apply --confirm`
+- `/organize undo-last`
+- `/organize status`
+- `/organize clear`
 - `/open <url>`
 - `/folder <path>`
 - `/whoami`
@@ -100,6 +117,28 @@ File manager safety rules:
 - Files only, no folder moves yet
 - Trash operations are reversible from Axion Trash
 - Screenshot cleanup requires `/screenshots clean --confirm`
+
+## Smart Laptop Organizer
+
+The Smart Laptop Organizer is preview-first. It scans only direct files in a target folder, suggests category folders, and moves files only after `/organize apply --confirm`.
+
+Examples:
+
+- `/organize scan C:\Users\ADMIN\Downloads\axion_organizer_test`
+- `/organize preview`
+- `/organize status`
+- `/organize apply --confirm`
+- `/organize undo-last`
+- `/organize clear`
+
+Organizer safety rules:
+
+- Scan first
+- Preview before moving
+- Apply requires `--confirm`
+- No permanent deletion
+- No overwrites; duplicate names use safe suffixes like `_1`
+- `/organize undo-last` reverses only the latest organizer apply session
 
 ## Voice Output
 
@@ -158,6 +197,10 @@ hello again
 /screenshots clean --confirm
 /trash C:\Users\ADMIN\Downloads\test.png
 /move C:\Users\ADMIN\Downloads\test.txt :: C:\Users\ADMIN\Documents
+/organize scan C:\Users\ADMIN\Downloads\axion_organizer_test
+/organize preview
+/organize apply --confirm
+/organize undo-last
 /status
 /exit
 ```
@@ -167,7 +210,9 @@ If a test file does not exist, Axion shows a friendly error and keeps running.
 ## Roadmap
 
 - Future Browser Automation
-- v1.0 Agent System
+- Safer app control
+- Voice input
+- Deeper project automation
 
 ## Axion v1.2 - Trash Manager + Restore System
 
@@ -187,3 +232,22 @@ Safety rules:
 - Restore never overwrites existing files.
 - Empty trash only touches Axion Trash.
 - Permanent deletion requires explicit confirmation.
+
+## Axion v1.3 - Smart Laptop Organizer
+
+Commands:
+
+```text
+/organize scan downloads
+/organize scan desktop
+/organize scan documents
+/organize scan pictures
+/organize scan <folder_path>
+/organize preview
+/organize apply --confirm
+/organize undo-last
+/organize status
+/organize clear
+```
+
+The organizer stores move sessions in `data/organizer/organizer_state.json`, which is ignored by git. It never deletes files and never overwrites existing files.

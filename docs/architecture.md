@@ -1,6 +1,6 @@
 # Axion Architecture
 
-Axion v0.9 is a modular Python terminal app that uses only the Python standard library. It keeps the local Ollama AI Core, projects, tasks, memory, notes, safe tools, Safe File Manager, and voice output, then adds Browser Research Lite.
+Axion v1.3 is a modular Python terminal app that uses only the Python standard library. It keeps the local Ollama AI Core, projects, tasks, memory, notes, safe tools, Safe File Manager, Trash Manager, Browser Research Lite, voice output, Agent Mode, Agent Execution Mode, and Smart Laptop Organizer.
 
 ## Core
 
@@ -90,12 +90,12 @@ ACTIVE PROJECTS:
 * Axion: AI Operating System built with Python and Ollama
 
 OPEN TASKS:
-* Push Axion v0.9 to GitHub
+* Push Axion v1.3 to GitHub
 ```
 
 ## Tools
 
-Tools are safe, focused helpers that interact with the computer. In v0.9, Axion can open websites, folders, saved project folders, allowlisted apps, allowlisted terminal commands, safe file operations, and browser research searches.
+Tools are safe, focused helpers that interact with the computer. In v1.3, Axion can open websites, folders, saved project folders, allowlisted apps, allowlisted terminal commands, safe file operations, trash files safely, restore files from Axion Trash, organize messy folders after preview, and open browser research searches.
 
 Important files:
 
@@ -104,13 +104,15 @@ Important files:
 - `src/axion/tools/app_launcher.py`
 - `src/axion/tools/safe_runner.py`
 - `src/axion/tools/file_manager.py`
+- `src/axion/tools/trash_manager.py`
+- `src/axion/tools/organizer.py`
 - `src/axion/tools/web_research.py`
 
 ## Browser Research Lite
 
 Browser Research Lite powers `/web search`, `/web open`, `/web youtube`, and `/web github`. It uses `webbrowser` to open browser pages and `urllib.parse.quote_plus` to safely encode search queries.
 
-In v0.9, Axion only opens safe browser URLs and search pages. It does not scrape websites, fill forms, click buttons, or control website sessions yet.
+In v1.3, Axion only opens safe browser URLs and search pages. It does not scrape websites, fill forms, click buttons, or control website sessions yet.
 
 Supported destinations:
 
@@ -170,6 +172,40 @@ Safety rules:
 
 Search skips heavy or system folders such as `.git`, `.venv`, `__pycache__`, `node_modules`, `.pnpm-store`, `AppData`, `Windows`, and `Program Files`.
 
+## Trash Manager
+
+The Trash Manager tracks Axion Trash metadata in `data/trash/trash_index.json`. The File Manager moves files to `data/trash/`, and the Trash Manager can list, inspect, restore, and preview emptying trash.
+
+Safety rules:
+
+- Restore never overwrites existing files
+- Empty trash only touches Axion Trash
+- Permanent deletion requires `/empty-trash --confirm`
+
+## Smart Organizer
+
+The Smart Laptop Organizer powers `/organize scan`, `/organize preview`, `/organize apply --confirm`, `/organize undo-last`, `/organize status`, and `/organize clear`.
+
+Important file:
+
+- `src/axion/tools/organizer.py`
+
+The organizer has five small parts:
+
+- Scanner: scans only direct files in the target folder
+- Classifier: maps filenames and extensions into categories like screenshots, PDFs, receipts, code, and unknown
+- Destination mapper: chooses safe folders under known Windows home folders such as Documents, Pictures, Downloads, and Videos
+- Move session logger: records each applied move in `data/organizer/organizer_state.json`
+- Undo system: reverses only the latest organizer apply session when it can do so without overwriting
+
+Safety rules:
+
+- Never move files without preview first
+- Apply requires `/organize apply --confirm`
+- Never overwrite existing files
+- Never permanently delete files
+- Default scans are shallow and skip hidden, dependency, virtual environment, source control, and system folders
+
 ## Safety
 
 The safety layer classifies future actions as:
@@ -178,14 +214,14 @@ The safety layer classifies future actions as:
 - `needs_confirmation`
 - `blocked`
 
-Dangerous actions are not executed in v0.9. This module exists so future automation has a clear safety checkpoint.
+Dangerous actions are not executed in v1.3. This module exists so future automation has a clear safety checkpoint.
 
 ## Logs
 
 Important actions are logged to `logs/axion.log`. The log folder is created automatically when Axion starts or writes its first log entry.
 
-Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, project changes, safe command execution, command blocks, command rejections, file searches, file moves, file trashing, screenshot cleanup, file operation failures, web searches, opened web URLs, voice output, voice failures, voice mode changes, AI response routing, model changes, and app exit.
+Logged actions include app start, command use, saved memories, saved notes, opened folders, opened URLs, app launches, app launch failures, task changes, project changes, safe command execution, command blocks, command rejections, file searches, file moves, file trashing, screenshot cleanup, trash manager activity, organizer scan, organizer preview, organizer apply, organizer undo, organizer clear, file operation failures, web searches, opened web URLs, voice output, voice failures, voice mode changes, AI response routing, model changes, and app exit.
 
 ## Future Agents
 
-Future versions can add agents on top of this foundation. Agents should use the command, project, memory, task, AI Core, tool, safety, file manager, voice, and log systems rather than bypassing them.
+Future versions can add deeper agents on top of this foundation. Agents should use the command, project, memory, task, AI Core, tool, safety, file manager, trash manager, organizer, voice, and log systems rather than bypassing them.

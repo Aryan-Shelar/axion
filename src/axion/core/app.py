@@ -12,6 +12,7 @@ from axion.core.identity import AXION_NAME, AXION_TAGLINE, AXION_VERSION
 from axion.memory.sqlite_memory import SQLiteMemory
 from axion.projects.project_store import ProjectStore
 from axion.tasks.task_store import TaskStore
+from axion.tools.organizer import SmartOrganizer
 from axion.tools.trash_manager import TrashManager
 from axion.utils.text import divider
 from axion.voice.speaker import speak_text
@@ -50,6 +51,7 @@ class AxionApp:
         self.projects = ProjectStore()
         self.plan_store = PlanStore()
         self.trash_manager = TrashManager()
+        self.organizer = SmartOrganizer()
         self.ai_core = AICore()
         self.agent_manager = AgentManager(
             self.plan_store,
@@ -68,6 +70,7 @@ class AxionApp:
             plan_store=self.plan_store,
             agent_manager=self.agent_manager,
             trash_manager=self.trash_manager,
+            organizer=self.organizer,
         )
         self.running = True
 

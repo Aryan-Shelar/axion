@@ -13,4 +13,4 @@ The long-term vision is a trusted local layer that can:
 - Coordinate multiple AI agents
 - Keep the user in control
 
-Version 0.9 adds Browser Research Lite while preserving the foundation: local AI Core, identity, local memory, tasks, projects, command routing, basic tools, safe terminal commands, safe file management, voice output, safety classification, status reporting, fallback responses, and activity logs.
+Version 1.3 adds Smart Laptop Organizer while preserving the foundation: local AI Core, identity, local memory, tasks, projects, command routing, basic tools, safe terminal commands, safe file management, Trash Manager, Browser Research Lite, voice output, Agent Mode, safety classification, status reporting, fallback responses, and activity logs.

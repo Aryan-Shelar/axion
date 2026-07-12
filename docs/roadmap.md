@@ -1,6 +1,6 @@
 # Axion Roadmap
 
-## v0.9 Browser Research Lite
+## v1.3 Smart Laptop Organizer
 
 - Identity and personality foundation
 - Improved terminal welcome screen
@@ -24,6 +24,9 @@
 - Voice mode for normal AI chat replies
 - Safe Google, YouTube, and GitHub search opening
 - Safe direct browser URL opening
+- Trash Manager and Restore System
+- Agent Mode and Agent Execution Mode
+- Smart Laptop Organizer with scan, preview, confirmed apply, and undo-last
 - Status reporting
 - Basic safety classification
 - Activity logging
@@ -34,6 +37,6 @@
 - Add browser automation helpers
 - Keep user-visible confirmation for important actions
 
-## v1.0 AI Operating Layer
+## Future AI Operating Layer
 
 - Combine memory, projects, tasks, tools, safety, apps, browser, voice, and agents into a reliable personal operating layer

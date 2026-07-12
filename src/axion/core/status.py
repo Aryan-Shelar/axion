@@ -17,6 +17,17 @@ def _safe_count(store: object, method_name: str, *args: object) -> int:
         return 0
 
 
+def _safe_text(store: object, method_name: str, default: str = "(none)") -> str:
+    """Call a text method safely and return a default if unavailable."""
+    try:
+        method = getattr(store, method_name)
+        value = method()
+    except Exception:
+        return default
+
+    return str(value) if value else default
+
+
 def build_status(
     memory,
     current_model: str,
@@ -26,6 +37,7 @@ def build_status(
     voice_enabled: bool = False,
     plan_store=None,
     trash_manager=None,
+    organizer=None,
 ) -> str:
     """Return a human-readable Axion system status."""
     lines = [
@@ -36,6 +48,7 @@ def build_status(
         f"Ollama available: {'yes' if ollama_available else 'no'}",
         "Safe terminal runner: enabled",
         "File manager: enabled",
+        "Smart organizer: enabled",
         "Trash manager: enabled",
         "Browser research: enabled",
         f"Voice output: {'enabled' if voice_enabled else 'disabled'}",
@@ -83,6 +96,14 @@ def build_status(
             [
                 f"Trashed files: {_safe_count(trash_manager, 'count_trashed')}",
                 f"Restored files: {_safe_count(trash_manager, 'count_restored')}",
+            ]
+        )
+
+    if organizer is not None:
+        lines.extend(
+            [
+                f"Latest organizer scan count: {_safe_count(organizer, 'latest_scan_count')}",
+                f"Latest organizer move session: {_safe_text(organizer, 'latest_session_label')}",
             ]
         )
 

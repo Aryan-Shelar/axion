@@ -38,6 +38,7 @@ from axion.tools.file_manager import (
     trash_file,
 )
 from axion.tools.folder_opener import open_folder
+from axion.tools.organizer import SmartOrganizer
 from axion.tools.safe_runner import run_safe_command
 from axion.tools.trash_manager import TrashManager
 from axion.tools.web_research import (
@@ -71,6 +72,7 @@ class CommandRouter:
         plan_store: PlanStore | None = None,
         agent_manager: AgentManager | None = None,
         trash_manager: TrashManager | None = None,
+        organizer: SmartOrganizer | None = None,
     ) -> None:
         self.memory = memory
         self.ai_core = ai_core or AICore()
@@ -86,6 +88,7 @@ class CommandRouter:
         )
         self.plan_store.initialize()
         self.trash_manager = trash_manager or TrashManager()
+        self.organizer = organizer or SmartOrganizer()
         self.execution_agent = ExecutionAgent(
             self.plan_store,
             self.task_store,
@@ -150,6 +153,8 @@ class CommandRouter:
             return self._restore(argument)
         if command == "/empty-trash":
             return self._empty_trash(argument)
+        if command == "/organize":
+            return self._organize(argument)
         if command == "/agent":
             return self._agent_command(argument)
         if command == "/plans":
@@ -178,6 +183,7 @@ class CommandRouter:
                     self.voice_enabled,
                     self.plan_store,
                     self.trash_manager,
+                    self.organizer,
                 )
             )
         if command == "/clear":
@@ -233,6 +239,16 @@ class CommandRouter:
                 "/restore <id> :: <destination_folder> - Restore a trash item elsewhere",
                 "/empty-trash preview - Preview permanent trash deletion",
                 "/empty-trash --confirm - Permanently empty Axion Trash",
+                "/organize scan downloads - Scan Downloads for safe organization suggestions",
+                "/organize scan desktop - Scan Desktop for safe organization suggestions",
+                "/organize scan documents - Scan Documents for safe organization suggestions",
+                "/organize scan pictures - Scan Pictures for safe organization suggestions",
+                "/organize scan <folder_path> - Scan one folder shallowly",
+                "/organize preview - Review latest organizer suggestions",
+                "/organize apply --confirm - Move previewed files safely",
+                "/organize undo-last - Undo the latest organizer move session",
+                "/organize status - Show organizer status",
+                "/organize clear - Clear latest organizer suggestions",
                 "/agent status - Show Agent Mode status",
                 "/agent plan <goal> - Create and save an agent plan",
                 "/plans - List all agent plans",
@@ -584,6 +600,57 @@ class CommandRouter:
         result = self.trash_manager.empty_trash(confirm=False)
         log_activity("empty trash blocked", result.message)
         return CommandResponse(result.message)
+
+    def _organize(self, argument: str) -> CommandResponse:
+        """Handle Smart Laptop Organizer commands."""
+        action, _, value = argument.partition(" ")
+        action = action.lower().strip()
+        value = value.strip()
+
+        if action == "scan":
+            if not value:
+                return CommandResponse("Usage: /organize scan <folder>")
+
+            result = self.organizer.scan(value)
+            if result.success:
+                log_activity("organizer scan completed", value)
+            return CommandResponse(result.message)
+
+        if action == "preview":
+            result = self.organizer.preview()
+            if result.success:
+                log_activity("organizer preview shown", f"count={result.count}")
+            return CommandResponse(result.message)
+
+        if action == "apply":
+            confirm = value == "--confirm"
+            result = self.organizer.apply(confirm=confirm)
+            if result.success:
+                log_activity("organizer apply completed", f"moved={result.count}")
+            else:
+                log_activity("organizer apply blocked", result.message)
+            return CommandResponse(result.message)
+
+        if action == "undo-last":
+            result = self.organizer.undo_last()
+            if result.success:
+                log_activity("organizer undo completed", f"undone={result.count}")
+            else:
+                log_activity("organizer undo blocked", result.message)
+            return CommandResponse(result.message)
+
+        if action == "status":
+            return CommandResponse(self.organizer.status().message)
+
+        if action == "clear":
+            result = self.organizer.clear()
+            if result.success:
+                log_activity("organizer cleared")
+            return CommandResponse(result.message)
+
+        return CommandResponse(
+            "Usage: /organize scan <folder>, /organize preview, /organize apply --confirm, /organize undo-last, /organize status, or /organize clear"
+        )
 
 
     def _agent_command(self, argument: str) -> CommandResponse:
