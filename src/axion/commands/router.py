@@ -47,6 +47,11 @@ from axion.tools.web_research import (
     open_web_url,
     open_youtube_search,
 )
+from axion.tools.smart_file_finder import SmartFileFinder, format_matches
+from axion.profile import ProfileVault
+from axion.profile.profile_vault import FIELDS
+from axion.autofill import AutofillBridge
+from axion.autofill.windows_autofill import WindowsAutofill
 from axion.voice.speaker import speak_text
 
 
@@ -89,6 +94,10 @@ class CommandRouter:
         self.plan_store.initialize()
         self.trash_manager = trash_manager or TrashManager()
         self.organizer = organizer or SmartOrganizer()
+        self.smart_finder = SmartFileFinder(trash_manager=self.trash_manager)
+        self.profile_vault = ProfileVault()
+        self.autofill_bridge = AutofillBridge(self.profile_vault, finder=self.smart_finder)
+        self.windows_autofill = WindowsAutofill()
         self.execution_agent = ExecutionAgent(
             self.plan_store,
             self.task_store,
@@ -137,6 +146,14 @@ class CommandRouter:
             return self._web(argument)
         if command == "/find":
             return self._find(argument)
+        if command in {"/find-name","/find-results","/find-show","/open-match","/move-match","/trash-match","/move-matches","/trash-matches"}:
+            return self._smart_file_command(command, argument)
+        if command == "/profile":
+            return self._profile_command(argument)
+        if command == "/autofill":
+            return self._autofill_command(argument)
+        if command == "/appfill":
+            return self._appfill_command(argument)
         if command == "/find-ext":
             return self._find_ext(argument)
         if command == "/move":
@@ -184,6 +201,9 @@ class CommandRouter:
                     self.plan_store,
                     self.trash_manager,
                     self.organizer,
+                    self.smart_finder,
+                    self.profile_vault,
+                    self.autofill_bridge,
                 )
             )
         if command == "/clear":
@@ -204,6 +224,18 @@ class CommandRouter:
             [
                 "Axion commands:",
                 "/help - Show this help message",
+                "/find-name <query> in <folder> [--recursive] - Smart filename search",
+                "/find-results | /find-show <id> | /open-match <id>",
+                "/move-match <id> :: <destination> | /trash-match <id>",
+                "/move-matches <query> in <folder> :: <destination> [--confirm]",
+                "/trash-matches <query> in <folder> [--confirm]",
+                "/profile create|show|fields|files|export-preview",
+                "/profile set <field> :: <value> | remove <field>",
+                "/profile add-file <label> :: <path> | remove-file <label>",
+                "/autofill status|start|stop|profile-preview|sites",
+                "/autofill allow-site|block-site <domain>",
+                "/autofill approve-sensitive|revoke-sensitive",
+                "/appfill detect|preview|fill --confirm - Windows beta",
                 "/exit - Exit Axion",
                 "/time - Show the current local time",
                 "/remember <text> - Save a memory",
@@ -286,6 +318,66 @@ class CommandRouter:
                 "/clear - Clear the terminal screen",
             ]
         )
+
+    def _smart_file_command(self, command: str, argument: str) -> CommandResponse:
+        try:
+            recursive = "--recursive" in argument
+            confirm = "--confirm" in argument
+            clean = argument.replace("--recursive", "").replace("--confirm", "").strip()
+            if command == "/find-results": return CommandResponse(format_matches(self.smart_finder.latest()))
+            if command in {"/find-show", "/open-match", "/trash-match"}:
+                item = self.smart_finder.get(int(clean))
+                if not item: return CommandResponse("Search result not found.")
+                if command == "/find-show": return CommandResponse(format_matches([item]))
+                if command == "/open-match": return CommandResponse(open_folder(str(__import__('pathlib').Path(item.path).parent)))
+                return CommandResponse(self.smart_finder.trash(item.result_id))
+            if command == "/move-match":
+                left, destination = self._split_double_colon(clean); return CommandResponse(self.smart_finder.move(int(left), destination))
+            if command == "/move-matches":
+                search, destination = self._split_double_colon(clean); query, folder = self._split_in_folder(search)
+                if not folder: return CommandResponse("Usage: /move-matches <query> in <folder> :: <destination>")
+                return CommandResponse(self.smart_finder.bulk(query, folder, "move", destination, recursive, confirm))
+            query, folder = self._split_in_folder(clean)
+            if not folder: return CommandResponse(f"Usage: {command} <query> in <folder>")
+            if command == "/trash-matches": return CommandResponse(self.smart_finder.bulk(query, folder, "trash", recursive=recursive, confirm=confirm))
+            return CommandResponse(format_matches(self.smart_finder.search(query, folder, recursive)))
+        except (ValueError, OSError) as error: return CommandResponse(f"Smart file finder: {error}")
+
+    def _profile_command(self, argument: str) -> CommandResponse:
+        action, _, value = argument.partition(" "); action=action.lower(); value=value.strip()
+        try:
+            if action == "create": self.profile_vault.create(); return CommandResponse("Local profile vault created.")
+            if action == "show": return CommandResponse(self.profile_vault.show())
+            if action == "fields": return CommandResponse("Supported fields:\n"+"\n".join(sorted(FIELDS)))
+            if action == "files":
+                files=self.profile_vault.files(); return CommandResponse("\n".join(f"{k}: {v}" for k,v in files.items()) or "No profile files registered.")
+            if action == "export-preview": return CommandResponse("Masked profile export preview:\n"+self.profile_vault.show())
+            if action == "set": field,val=self._split_double_colon(value); self.profile_vault.set(field,val); return CommandResponse(f"Profile field saved: {field}")
+            if action == "remove": self.profile_vault.remove(value); return CommandResponse(f"Profile field removed: {value}")
+            if action == "add-file": label,path=self._split_double_colon(value); self.profile_vault.add_file(label,path); return CommandResponse(f"Profile file registered: {label}")
+            if action == "remove-file": self.profile_vault.remove_file(value); return CommandResponse(f"Profile file removed: {value}")
+            return CommandResponse("Usage: /profile create|show|fields|set|remove|add-file|files|remove-file|export-preview")
+        except (ValueError,RuntimeError,OSError) as error:return CommandResponse(f"Profile vault: {error}")
+
+    def _autofill_command(self, argument: str) -> CommandResponse:
+        action,_,value=argument.partition(" "); action=action.lower(); value=value.strip()
+        try:
+            if action=="status":return CommandResponse("Autofill bridge: "+("running" if self.autofill_bridge.running else "stopped"))
+            if action=="start":return CommandResponse(self.autofill_bridge.start())
+            if action=="stop":return CommandResponse(self.autofill_bridge.stop())
+            if action=="profile-preview":return CommandResponse(self.profile_vault.show())
+            if action in {"allow-site","block-site"}:self.autofill_bridge.update_site(value,action=="allow-site");return CommandResponse(f"Site rule updated: {value}")
+            if action=="sites":return CommandResponse(str(self.autofill_bridge.settings()))
+            if action=="approve-sensitive":self.autofill_bridge.approve_sensitive();return CommandResponse("One sensitive fill operation approved.")
+            if action=="revoke-sensitive":self.autofill_bridge.revoke_sensitive();return CommandResponse("Sensitive fill approval revoked.")
+            return CommandResponse("Usage: /autofill status|start|stop|profile-preview|allow-site|block-site|sites|approve-sensitive|revoke-sensitive")
+        except (ValueError,OSError) as error:return CommandResponse(f"Autofill: {error}")
+
+    def _appfill_command(self, argument: str) -> CommandResponse:
+        if argument=="detect":return CommandResponse(self.windows_autofill.detect())
+        if argument=="preview":return CommandResponse(self.windows_autofill.preview())
+        if argument.startswith("fill"):return CommandResponse(self.windows_autofill.fill("--confirm" in argument))
+        return CommandResponse("Usage: /appfill detect|preview|fill --confirm")
 
     def _current_time(self) -> str:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

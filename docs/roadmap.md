@@ -32,9 +32,32 @@
 - Activity logging
 - Built-in fallback responses when the AI Core is unavailable
 
+## v2.0 Smart Productivity Layer
+
+- Smart filename search and fuzzy matching
+- Selective and confirmed bulk file actions through Axion Trash
+- Local DPAPI-protected Personal Profile Vault
+- Localhost-only, token-authenticated autofill bridge
+- Chrome and Edge Manifest V3 extension
+- Safe-field previews and explicit browser fill actions
+- Intelligent document upload suggestions
+- Conservative Windows App Autofill Beta architecture
+- Deterministic natural-language productivity previews
+- Updated status, help, security documentation, and automated tests
+
+## v2.0 Acceptance and Hardening Plan
+
+- Complete manual CLI acceptance testing with disposable files
+- Validate the unpacked extension in current Chrome and Edge releases
+- Verify DPAPI behavior directly on Windows
+- Expand router, Trash Manager integration, request validation, and log-redaction tests
+- Review domain normalization, token lifecycle, path disclosure, and shutdown behavior
+- Improve maintainability of compact command and extension handlers
+- Run final compilation, complete tests, diff checks, and release review before merging
+
 ## Future Browser Automation
 
-- Add browser automation helpers
+- Add broader browser automation helpers beyond safe autofill
 - Keep user-visible confirmation for important actions
 
 ## Future AI Operating Layer

@@ -1,10 +1,10 @@
-# Axion
+# Axion v2.0 — Smart Productivity Layer
 
 Axion is a private AI Operating System / AI Operating Layer. The long-term goal is a world-class personal assistant that can think, remember, plan, use tools, and control the computer safely.
 
-Axion v1.3 adds Smart Laptop Organizer. Axion can scan messy folders, preview suggested file moves, apply them only after explicit confirmation, and undo the latest organizer move session.
+Axion v2.0 adds smart filename search, a local encrypted Personal Profile Vault, consent-driven browser autofill, document upload suggestions, and a safe Windows application autofill beta. All Axion v1.3 organizer, trash, agent, task, project, voice, browser-research, and file-management functionality remains available.
 
-## Current v1.3 Features
+## Current v2.0 Features
 
 - Local Ollama AI Core with default model `llama3.2:1b`
 - Memory and notes
@@ -20,6 +20,15 @@ Axion v1.3 adds Smart Laptop Organizer. Axion can scan messy folders, preview su
 - Agent Mode
 - Agent Execution Mode
 - Activity logging to `logs/axion.log`
+- Smart filename search with exact, token, contains, prefix, suffix, and fuzzy matching
+- Persisted search results with selective open, move, and trash actions
+- Preview-and-confirm bulk file actions with no-overwrite naming
+- Local DPAPI-protected Personal Profile Vault with masked sensitive output
+- Token-authenticated localhost browser bridge and per-site controls
+- Chrome/Edge Manifest V3 extension with mapping previews and explicit fill actions
+- Document upload suggestions with manual browser file selection
+- Windows App Autofill Beta safe architecture
+- Deterministic natural-language productivity previews
 
 ## Run
 
@@ -251,3 +260,8 @@ Commands:
 ```
 
 The organizer stores move sessions in `data/organizer/organizer_state.json`, which is ignored by git. It never deletes files and never overwrites existing files.
+## Axion v2.0 — Smart Productivity Layer
+
+Axion v2.0 adds Smart File Finder, a local Personal Profile Vault, consent-driven Browser Autofill, a Document Upload Assistant, and Windows App Autofill Beta while preserving v1.3 commands.
+
+Use `/find-name aryan resme in downloads`, `/profile create`, `/profile set email :: you@example.com`, and `/autofill start`. Bulk move/trash always previews and requires `--confirm`; trash uses Axion Trash and moves never overwrite. Profile data stays local, sensitive fields use DPAPI and per-fill approval, prohibited fields are never filled, and forms are never submitted. See `docs/security.md`, `docs/profile-vault.md`, and `docs/browser-extension-setup.md` for setup and the complete safety model.

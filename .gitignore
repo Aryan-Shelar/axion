@@ -20,3 +20,17 @@ dist/
 *.egg-info/
 data/*.db
 logs/
+data/profile/
+data/search/
+data/autofill/
+data/organizer/
+data/trash/
+data/*.db
+logs/
+__pycache__/
+*.pyc
+*.egg-info/
+node_modules/
+.pnpm-store/
+.venv/
+env/

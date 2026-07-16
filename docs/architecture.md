@@ -1,6 +1,6 @@
 # Axion Architecture
 
-Axion v1.3 is a modular Python terminal app that uses only the Python standard library. It keeps the local Ollama AI Core, projects, tasks, memory, notes, safe tools, Safe File Manager, Trash Manager, Browser Research Lite, voice output, Agent Mode, Agent Execution Mode, and Smart Laptop Organizer.
+Axion v2.0 is a modular Python terminal app built primarily with the Python standard library. It preserves the local Ollama AI Core, projects, tasks, memory, notes, safe tools, Safe File Manager, Trash Manager, Browser Research Lite, voice output, Agent Mode, Agent Execution Mode, and Smart Laptop Organizer while adding the Smart Productivity Layer.
 
 ## Core
 
@@ -90,7 +90,7 @@ ACTIVE PROJECTS:
 * Axion: AI Operating System built with Python and Ollama
 
 OPEN TASKS:
-* Push Axion v1.3 to GitHub
+* Publish and review Axion v2.0 on its feature branch
 ```
 
 ## Tools
@@ -112,7 +112,7 @@ Important files:
 
 Browser Research Lite powers `/web search`, `/web open`, `/web youtube`, and `/web github`. It uses `webbrowser` to open browser pages and `urllib.parse.quote_plus` to safely encode search queries.
 
-In v1.3, Axion only opens safe browser URLs and search pages. It does not scrape websites, fill forms, click buttons, or control website sessions yet.
+Axion still does not scrape websites or control website sessions. The v2.0 extension can detect and fill conservatively mapped fields only after explicit user action through the token-authenticated localhost bridge, and it never submits forms.
 
 Supported destinations:
 
@@ -225,3 +225,6 @@ Logged actions include app start, command use, saved memories, saved notes, open
 ## Future Agents
 
 Future versions can add deeper agents on top of this foundation. Agents should use the command, project, memory, task, AI Core, tool, safety, file manager, trash manager, organizer, voice, and log systems rather than bypassing them.
+## Axion v2.0 Smart Productivity Layer
+
+The command router coordinates the Smart File Finder, DPAPI-backed Profile Vault, localhost Autofill Bridge, browser extension, and conservative Windows Autofill beta. Search persists result metadata for selective actions; all trash operations pass through the Axion Trash Manager. Bulk and natural-language destructive intents stop at preview unless the explicit command includes `--confirm`.

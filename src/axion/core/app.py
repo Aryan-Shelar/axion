@@ -121,6 +121,10 @@ class AxionApp:
 
     def _handle_normal_chat(self, user_message: str) -> str:
         """Send normal chat to the AI Core with fallback if needed."""
+        from axion.commands.productivity_intents import translate_intent
+        intent = translate_intent(user_message)
+        if intent:
+            return self.router.handle(intent).message if intent.startswith("/find-name") else intent
         log_activity("Routing normal message to AI Core", user_message)
         try:
             recent_memories = self._recent_memory_contents()

@@ -38,6 +38,9 @@ def build_status(
     plan_store=None,
     trash_manager=None,
     organizer=None,
+    smart_finder=None,
+    profile_vault=None,
+    autofill_bridge=None,
 ) -> str:
     """Return a human-readable Axion system status."""
     lines = [
@@ -49,6 +52,11 @@ def build_status(
         "Safe terminal runner: enabled",
         "File manager: enabled",
         "Smart organizer: enabled",
+        "Smart file finder: enabled",
+        f"Profile vault: {'configured' if profile_vault and profile_vault.configured() else 'not configured'}",
+        f"Autofill bridge: {'running' if autofill_bridge and autofill_bridge.running else 'stopped'}",
+        "Browser extension: available",
+        "Windows app autofill: beta",
         "Trash manager: enabled",
         "Browser research: enabled",
         f"Voice output: {'enabled' if voice_enabled else 'disabled'}",
@@ -106,6 +114,10 @@ def build_status(
                 f"Latest organizer move session: {_safe_text(organizer, 'latest_session_label')}",
             ]
         )
+    if profile_vault is not None:
+        lines.append(f"Registered profile files: {len(profile_vault.files())}")
+    if smart_finder is not None:
+        lines.append(f"Latest file search results: {len(smart_finder.latest())}")
 
     lines.extend(
         [
