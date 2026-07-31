@@ -14,9 +14,9 @@ describe("Hermes normalization", () => {
   });
 
   it("removes messages and sensitive fields from session summaries", () => {
-    const sessions = normalizeSessions({ sessions: [{ id: "s1", title: "Planning", status: "active", updated_at: "2026-07-31", messages: [{ content: "secret" }], api_key: "hidden", token: "hidden", path: "C:/private" }] });
-    expect(sessions).toEqual([{ id: "s1", title: "Planning", status: "active", updatedAt: "2026-07-31" }]);
-    expect(JSON.stringify(sessions)).not.toMatch(/secret|hidden|private|messages|content|token|key|path/i);
+    const sessions = normalizeSessions({ sessions: [{ id: "s1", title: "Planning", source: "hermes-cli", status: "active", updated_at: "2026-07-31", messages: [{ content: "secret" }], prompt: "private prompt", tool_arguments: { token: "hidden" }, output: "private output", api_key: "hidden", path: "C:/private" }] });
+    expect(sessions).toEqual([{ id: "s1", title: "Planning", source: "hermes-cli", status: "active", updatedAt: "2026-07-31" }]);
+    expect(JSON.stringify(sessions)).not.toMatch(/secret|hidden|private|messages|content|prompt|tool|argument|output|token|key|path/i);
   });
 
   it("normalizes skills and toolsets to minimal summaries", () => {

@@ -37,7 +37,7 @@ export function normalizeToolsets(value: unknown): HermesToolsetSummary[] {
 export function normalizeSessions(value: unknown): HermesSessionSummary[] {
   return collection(value, "sessions").map((item) => {
     const entry = record(item); const id = text(entry.id) ?? text(entry.session_id); if (!id) throw new HermesRequestError("malformed");
-    return { id, title: text(entry.title) ?? text(entry.name) ?? `Session ${id}`, ...(text(entry.status) ? { status: text(entry.status) } : {}), ...(text(entry.updated_at) ?? text(entry.updatedAt) ? { updatedAt: text(entry.updated_at) ?? text(entry.updatedAt) } : {}) };
+    return { id, title: text(entry.title) ?? text(entry.name) ?? `Session ${id}`, ...(text(entry.source) ? { source: text(entry.source) } : {}), ...(text(entry.status) ? { status: text(entry.status) } : {}), ...(text(entry.updated_at) ?? text(entry.updatedAt) ? { updatedAt: text(entry.updated_at) ?? text(entry.updatedAt) } : {}) };
   });
 }
 
