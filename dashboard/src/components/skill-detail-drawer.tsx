@@ -5,9 +5,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Activity, Bot, Braces, Clock3, Gauge, History, Pencil, Play, Workflow, X } from "lucide-react";
 import { departmentById } from "@/data/departments";
 import type { Skill } from "@/types/skill-tree";
+import type { SkillInstallation } from "@/lib/hermes/types";
 import { StatusBadge } from "./status-badge";
 
-export function SkillDetailDrawer({ skill, onClose }: { skill: Skill | null; onClose: () => void }) {
+const installationLabels: Record<SkillInstallation, string> = { installed: "Installed in Hermes", prototype: "Prototype skill", unavailable: "Installation status unavailable" };
+
+export function SkillDetailDrawer({ skill, installation = "unavailable", onClose }: { skill: Skill | null; installation?: SkillInstallation; onClose: () => void }) {
   const [feedback, setFeedback] = useState("");
   const showFeedback = (action: string) => setFeedback(`${action} is a prototype action in this demo.`);
 
@@ -19,6 +22,7 @@ export function SkillDetailDrawer({ skill, onClose }: { skill: Skill | null; onC
         <button onClick={onClose} aria-label="Close details"><X size={18} /></button>
         <span>{departmentById[skill.departmentId].name} / Skill</span><h2>{skill.name}</h2><p>{skill.description}</p>
         <div className="drawer-badges"><StatusBadge status={skill.status} /><span><Gauge size={13} />{skill.autonomy}</span></div>
+        <div className={`skill-installation ${installation}`}>{installationLabels[installation]}</div>
       </header>
       <div className="drawer-content">
         <section><h3><Bot size={14} />Tools</h3><div className="chips">{skill.tools.map((tool) => <span key={tool}>{tool}</span>)}</div></section>
@@ -31,7 +35,7 @@ export function SkillDetailDrawer({ skill, onClose }: { skill: Skill | null; onC
       </div>
       {feedback && <motion.div className="action-feedback" role="status" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>{feedback}</motion.div>}
       <footer>
-        <button className="run-button" onClick={() => showFeedback("Run")}><Play size={16} fill="currentColor" />Run Skill</button>
+        <button className="phase-b-button" disabled><Play size={16} />Available in Phase B</button>
         <button onClick={() => showFeedback("Edit")}><Pencil size={15} />Edit</button>
         <button onClick={() => showFeedback("History")}><History size={15} />History</button>
       </footer>

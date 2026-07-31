@@ -38,4 +38,5 @@ export type AxionNodeData = {
   status?: NodeStatus;
   departmentId?: string;
   skillId?: string;
+  installation?: "installed" | "prototype" | "unavailable";
 };
