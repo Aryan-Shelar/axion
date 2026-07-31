@@ -52,4 +52,18 @@ describe("ActivityPanel", () => {
     expect(screen.queryByText(/message|secret|prompt|output/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /delete|edit|resume|stop|run/i })).not.toBeInTheDocument();
   });
+
+  it("shows only the three newest compact sessions and opens the full Activity view", () => {
+    const onOpenFull = vi.fn();
+    const compactSessions = [
+      ...sessions,
+      { id: "middle", title: "Middle Hermes session", updatedAt: "2026-07-31T09:00:00Z" },
+      { id: "latest", title: "Latest Hermes session", updatedAt: "2026-07-31T11:00:00Z" },
+    ];
+    render(<ActivityPanel {...base} sessions={compactSessions} onOpenFull={onOpenFull} />);
+    expect(screen.getAllByRole("button", { name: /Hermes session/i })).toHaveLength(3);
+    expect(screen.queryByRole("button", { name: /Older Hermes session/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open full activity" }));
+    expect(onOpenFull).toHaveBeenCalledOnce();
+  });
 });
