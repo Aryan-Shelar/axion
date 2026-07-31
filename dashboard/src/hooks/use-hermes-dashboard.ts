@@ -1,14 +1,12 @@
 "use client";
 
 import { useCallback } from "react";
-import type { HermesGatewayStatus, HermesHealth, HermesOverview, HermesSessionSummary, HermesSkillSummary, HermesToolsetSummary } from "@/lib/hermes/types";
+import type { HermesDashboardOverview, HermesGatewayStatus, HermesHealth, HermesSessionSummary, HermesSkillSummary, HermesToolsetSummary } from "@/lib/hermes/types";
 import { useHermesResource } from "./use-hermes-resource";
-
-export type HermesOverviewData = HermesOverview & { installedSkillsCount: number | null; toolsetsCount: number | null; recentSessionsCount: number | null; panels?: Record<string, unknown> };
 
 export function useHermesDashboard() {
   const health = useHermesResource<HermesHealth>("/api/hermes/health", 15_000);
-  const overview = useHermesResource<HermesOverviewData>("/api/hermes/overview", 30_000);
+  const overview = useHermesResource<HermesDashboardOverview>("/api/hermes/overview", 30_000);
   const sessions = useHermesResource<HermesSessionSummary[]>("/api/hermes/sessions", 30_000);
   const skills = useHermesResource<HermesSkillSummary[]>("/api/hermes/skills", 60_000);
   const toolsets = useHermesResource<HermesToolsetSummary[]>("/api/hermes/toolsets", 60_000);

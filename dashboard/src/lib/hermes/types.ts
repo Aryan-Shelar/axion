@@ -7,5 +7,6 @@ export type HermesSkillSummary = { id: string; name: string; description?: strin
 export type HermesToolsetSummary = { id: string; name: string };
 export type HermesSessionSummary = { id: string; title: string; status?: string; updatedAt?: string };
 export type HermesOverview = { profile: string | null; model: string | null; activeRuns: number | null; activeDelegations: number | null };
+export type HermesDashboardOverview = HermesOverview & { installedSkillsCount: number | null; toolsetsCount: number | null; recentSessionsCount: number | null };
 export type HermesEnvelope<T> = { data: T | null; error: HermesPublicError | null; refreshedAt: string | null };
 export type SkillInstallation = "installed" | "prototype" | "unavailable";
