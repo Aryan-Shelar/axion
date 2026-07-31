@@ -1,2 +1,6 @@
-dev-server*.log
+node_modules/
+.next/
+.npm-cache/
+coverage/
+*.log
 .npm-cache/
