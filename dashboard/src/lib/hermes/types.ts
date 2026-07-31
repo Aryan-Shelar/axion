@@ -1,0 +1,11 @@
+export type HermesPath = "/health" | "/health/detailed" | "/v1/capabilities" | "/v1/models" | "/v1/skills" | "/v1/toolsets" | "/api/sessions";
+export type HermesGatewayStatus = "checking" | "online" | "degraded" | "offline" | "authentication";
+export type HermesErrorCode = "offline" | "authentication" | "unavailable";
+export type HermesPublicError = { code: HermesErrorCode; message: string };
+export type HermesHealth = { readiness: "ready" | "degraded"; status: string };
+export type HermesSkillSummary = { id: string; name: string; description?: string };
+export type HermesToolsetSummary = { id: string; name: string };
+export type HermesSessionSummary = { id: string; title: string; status?: string; updatedAt?: string };
+export type HermesOverview = { profile: string | null; model: string | null; activeRuns: number | null; activeDelegations: number | null };
+export type HermesEnvelope<T> = { data: T | null; error: HermesPublicError | null; refreshedAt: string | null };
+export type SkillInstallation = "installed" | "prototype" | "unavailable";
