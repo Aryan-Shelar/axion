@@ -11,6 +11,11 @@ export function useHermesDashboard() {
   const skills = useHermesResource<HermesSkillSummary[]>("/api/hermes/skills", 60_000);
   const toolsets = useHermesResource<HermesToolsetSummary[]>("/api/hermes/toolsets", 60_000);
   const gatewayStatus: HermesGatewayStatus = health.loading ? "checking" : health.error?.code === "authentication" ? "authentication" : health.error?.code === "offline" ? "offline" : health.data?.readiness === "degraded" ? "degraded" : health.data ? "online" : "offline";
-  const refreshAll = useCallback(async () => { await Promise.all([health.refresh(), overview.refresh(), sessions.refresh(), skills.refresh(), toolsets.refresh()]); }, [health.refresh, overview.refresh, sessions.refresh, skills.refresh, toolsets.refresh]);
+  const { refresh: refreshHealth } = health;
+  const { refresh: refreshOverview } = overview;
+  const { refresh: refreshSessions } = sessions;
+  const { refresh: refreshSkills } = skills;
+  const { refresh: refreshToolsets } = toolsets;
+  const refreshAll = useCallback(async () => { await Promise.all([refreshHealth(), refreshOverview(), refreshSessions(), refreshSkills(), refreshToolsets()]); }, [refreshHealth, refreshOverview, refreshSessions, refreshSkills, refreshToolsets]);
   return { health, overview, sessions, skills, toolsets, gatewayStatus, refreshAll };
 }

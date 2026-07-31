@@ -1,3 +1,4 @@
+import "server-only";
 import { HermesRequestError } from "./errors";
 import type { HermesPath } from "./types";
 
