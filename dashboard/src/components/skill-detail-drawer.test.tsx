@@ -17,8 +17,13 @@ describe("SkillDetailDrawer", () => {
     expect(screen.getByText(label)).toBeInTheDocument();
   });
 
-  it("keeps execution disabled for Phase A", () => {
-    render(<SkillDetailDrawer skill={skills[0]} installation="installed" onClose={() => undefined} />);
-    expect(screen.getByRole("button", { name: "Available in Phase B" })).toBeDisabled();
+  it("enables execution only for an online installed skill with submission support", () => {
+    render(<SkillDetailDrawer skill={skills[0]} installation="installed" online capabilities={{ runSubmission: true, runStatus: true, runEventsSse: true, runStop: true, runApprovalResponse: true, approvalEvents: true }} onClose={() => undefined} onRunSkill={() => undefined} />);
+    expect(screen.getByRole("button", { name: "Run Skill" })).toBeEnabled();
+  });
+
+  it.each([["prototype", true, "Prototype skills cannot run"], ["unavailable", true, "Installation status is unavailable"], ["installed", false, "Hermes is offline"]] as const)("disables %s when online=%s", (installation, online, reason) => {
+    render(<SkillDetailDrawer skill={skills[0]} installation={installation} online={online} capabilities={{ runSubmission: true, runStatus: true, runEventsSse: true, runStop: true, runApprovalResponse: true, approvalEvents: true }} onClose={() => undefined} />);
+    expect(screen.getByRole("button", { name: "Run Skill" })).toBeDisabled(); expect(screen.getByText(reason)).toBeInTheDocument();
   });
 });

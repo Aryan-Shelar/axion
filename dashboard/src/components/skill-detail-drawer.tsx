@@ -5,14 +5,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Activity, Bot, Braces, Clock3, Gauge, History, Pencil, Play, Workflow, X } from "lucide-react";
 import { departmentById } from "@/data/departments";
 import type { Skill } from "@/types/skill-tree";
-import type { SkillInstallation } from "@/lib/hermes/types";
+import type { HermesCapabilities, SkillInstallation } from "@/lib/hermes/types";
 import { StatusBadge } from "./status-badge";
 
 const installationLabels: Record<SkillInstallation, string> = { installed: "Installed in Hermes", prototype: "Prototype skill", unavailable: "Installation status unavailable" };
 
-export function SkillDetailDrawer({ skill, installation = "unavailable", onClose }: { skill: Skill | null; installation?: SkillInstallation; onClose: () => void }) {
+type Props = { skill: Skill | null; installation?: SkillInstallation; online?: boolean; capabilities?: HermesCapabilities | null; submitting?: boolean; onRunSkill?: (opener: HTMLButtonElement) => void; onClose: () => void };
+export function SkillDetailDrawer({ skill, installation = "unavailable", online = false, capabilities = null, submitting = false, onRunSkill, onClose }: Props) {
   const [feedback, setFeedback] = useState("");
   const showFeedback = (action: string) => setFeedback(`${action} is a prototype action in this demo.`);
+  const reason = !online ? "Hermes is offline" : installation === "prototype" ? "Prototype skills cannot run" : installation === "unavailable" ? "Installation status is unavailable" : !capabilities?.runSubmission ? "Connected Hermes does not support run submission" : submitting ? "A run is already starting" : null;
 
   return <AnimatePresence>{skill && <>
     <motion.button className="drawer-scrim" aria-label="Close skill details" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
@@ -35,7 +37,7 @@ export function SkillDetailDrawer({ skill, installation = "unavailable", onClose
       </div>
       {feedback && <motion.div className="action-feedback" role="status" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>{feedback}</motion.div>}
       <footer>
-        <button className="phase-b-button" disabled><Play size={16} />Available in Phase B</button>
+        <div className="run-skill-action"><button className="phase-b-button" disabled={Boolean(reason)} onClick={(event) => onRunSkill?.(event.currentTarget)}><Play size={16} />Run Skill</button>{reason && <small>{reason}</small>}</div>
         <button onClick={() => showFeedback("Edit")}><Pencil size={15} />Edit</button>
         <button onClick={() => showFeedback("History")}><History size={15} />History</button>
       </footer>
