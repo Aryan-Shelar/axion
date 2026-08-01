@@ -19,6 +19,7 @@ vi.mock("@/hooks/use-hermes-dashboard", () => ({
     sessions: { data: sessions, loading: false, error: null, refresh: refreshSessions },
     skills: { data: [], loading: false, error: null },
     toolsets: { data: [], loading: false, error: null },
+    capabilities: { data: { runSubmission: true, runStatus: true, runEventsSse: true, runStop: true, runApprovalResponse: true, approvalEvents: true }, loading: false, error: null },
     gatewayStatus: "online",
     refreshAll: vi.fn(),
   }),
