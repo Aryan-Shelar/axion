@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { toPublicHermesError } from "./errors";
 import { HERMES_SKILL_ALIASES } from "./skill-aliases";
-import { normalizeCapabilities, normalizeRunSummary } from "./run-normalize";
+import { isValidRunId, normalizeCapabilities, normalizeRunSummary } from "./run-normalize";
 import { normalizeSkills } from "./normalize";
 import { createHermesRun, getInstalledRunSkills, getRunCapabilities } from "./run-client";
 import type { HermesApprovalDecision, HermesRunSummary } from "./types";
@@ -25,6 +25,7 @@ export function parseCreateRunRequest(value: Record<string, unknown>) {
   return { skillId, task, idempotencyKey };
 }
 export function parseApprovalRequest(value: Record<string, unknown>): HermesApprovalDecision { if (value.decision !== "once" && value.decision !== "deny") throw new RunRouteError(400, "Decision must be once or deny."); return value.decision; }
+export function requireRunId(value: string) { if (!isValidRunId(value)) throw new RunRouteError(400, "Invalid run ID."); return value; }
 
 export const runSuccess = <T>(data: T, status = 200) => Response.json({ data, error: null, refreshedAt: new Date().toISOString() }, { status });
 export function runFailure(error: unknown) { if (error instanceof RunRouteError) return Response.json({ data: null, error: { code: "unavailable", message: error.message }, refreshedAt: null }, { status: error.status }); const safe = toPublicHermesError(error); return Response.json({ data: null, error: safe, refreshedAt: null }, { status: safe.code === "authentication" ? 401 : 503 }); }

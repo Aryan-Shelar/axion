@@ -17,6 +17,7 @@ export function useHermesDashboard() {
   const { refresh: refreshSessions } = sessions;
   const { refresh: refreshSkills } = skills;
   const { refresh: refreshToolsets } = toolsets;
-  const refreshAll = useCallback(async () => { await Promise.all([refreshHealth(), refreshOverview(), refreshSessions(), refreshSkills(), refreshToolsets()]); }, [refreshHealth, refreshOverview, refreshSessions, refreshSkills, refreshToolsets]);
+  const { refresh: refreshCapabilities } = capabilities;
+  const refreshAll = useCallback(async () => { await Promise.all([refreshHealth(), refreshOverview(), refreshSessions(), refreshSkills(), refreshToolsets(), refreshCapabilities()]); }, [refreshHealth, refreshOverview, refreshSessions, refreshSkills, refreshToolsets, refreshCapabilities]);
   return { health, overview, sessions, skills, toolsets, capabilities, gatewayStatus, refreshAll };
 }
