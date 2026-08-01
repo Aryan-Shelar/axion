@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import type { HermesDashboardOverview, HermesGatewayStatus, HermesHealth, HermesSessionSummary, HermesSkillSummary, HermesToolsetSummary } from "@/lib/hermes/types";
+import type { HermesCapabilities, HermesDashboardOverview, HermesGatewayStatus, HermesHealth, HermesSessionSummary, HermesSkillSummary, HermesToolsetSummary } from "@/lib/hermes/types";
 import { useHermesResource } from "./use-hermes-resource";
 
 export function useHermesDashboard() {
@@ -10,6 +10,7 @@ export function useHermesDashboard() {
   const sessions = useHermesResource<HermesSessionSummary[]>("/api/hermes/sessions", 30_000);
   const skills = useHermesResource<HermesSkillSummary[]>("/api/hermes/skills", 60_000);
   const toolsets = useHermesResource<HermesToolsetSummary[]>("/api/hermes/toolsets", 60_000);
+  const capabilities = useHermesResource<HermesCapabilities>("/api/hermes/capabilities", 60_000);
   const gatewayStatus: HermesGatewayStatus = health.loading ? "checking" : health.error?.code === "authentication" ? "authentication" : health.error?.code === "offline" ? "offline" : health.data?.readiness === "degraded" ? "degraded" : health.data ? "online" : "offline";
   const { refresh: refreshHealth } = health;
   const { refresh: refreshOverview } = overview;
@@ -17,5 +18,5 @@ export function useHermesDashboard() {
   const { refresh: refreshSkills } = skills;
   const { refresh: refreshToolsets } = toolsets;
   const refreshAll = useCallback(async () => { await Promise.all([refreshHealth(), refreshOverview(), refreshSessions(), refreshSkills(), refreshToolsets()]); }, [refreshHealth, refreshOverview, refreshSessions, refreshSkills, refreshToolsets]);
-  return { health, overview, sessions, skills, toolsets, gatewayStatus, refreshAll };
+  return { health, overview, sessions, skills, toolsets, capabilities, gatewayStatus, refreshAll };
 }

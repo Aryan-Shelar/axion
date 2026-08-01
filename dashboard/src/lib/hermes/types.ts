@@ -10,3 +10,16 @@ export type HermesOverview = { profile: string | null; model: string | null; act
 export type HermesDashboardOverview = HermesOverview & { installedSkillsCount: number | null; toolsetsCount: number | null; recentSessionsCount: number | null };
 export type HermesEnvelope<T> = { data: T | null; error: HermesPublicError | null; refreshedAt: string | null };
 export type SkillInstallation = "installed" | "prototype" | "unavailable";
+export type HermesCapabilities = { runSubmission: boolean; runStatus: boolean; runEventsSse: boolean; runStop: boolean; runApprovalResponse: boolean; approvalEvents: boolean };
+export type HermesRunStatus = "starting" | "queued" | "running" | "waiting_for_approval" | "stopping" | "completed" | "failed" | "cancelled" | "disconnected" | "unknown";
+export type HermesApprovalRequest = { approvalId: string; title: string; summary: string; kind?: string; expiresAt?: string };
+export type HermesApprovalDecision = "once" | "deny";
+export type HermesRunSummary = { runId: string; skillId: string; status: HermesRunStatus; output?: string; error?: string; createdAt?: string; updatedAt?: string; approval?: HermesApprovalRequest };
+export type HermesRunEvent =
+  | { type: "status"; status: HermesRunStatus; label?: string }
+  | { type: "progress"; label: string }
+  | { type: "tool"; label: string; state: "started" | "completed" }
+  | { type: "output_delta" | "output_final"; text: string }
+  | { type: "approval_required"; approval: HermesApprovalRequest }
+  | { type: "approval_resolved"; decision?: HermesApprovalDecision }
+  | { type: "failure"; message: string };
