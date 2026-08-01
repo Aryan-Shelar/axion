@@ -1,6 +1,6 @@
 # AXION SkillTree Dashboard
 
-The AXION SkillTree dashboard is a Next.js application with a Phase A read-only bridge to a locally running Hermes Agent API. It does not modify or execute the Python AXION application, and it does not execute Hermes skills.
+The AXION SkillTree dashboard is a Next.js application with a secure server bridge to a locally running Hermes Agent API. Phase A resources remain read-only; Phase B can execute only AXION-trusted skills that Hermes currently reports as installed.
 
 ## Requirements
 
@@ -46,11 +46,23 @@ The example above is documentation only. Do not commit a real `.env.local`.
 
 ## Security boundary
 
-The browser calls only fixed `/api/hermes/*` AXION routes. Those server routes call seven allowlisted Hermes GET endpoints with a five-second timeout and `cache: "no-store"`. There is no generic proxy, browser CORS support, arbitrary upstream path, write endpoint, raw upstream error body, API-key response, or session message-content response.
+The browser calls only fixed `/api/hermes/*` AXION routes. Phase A reads still use the original GET-only client. Phase B uses a separate `server-only` client restricted to capabilities, installed skills, create/status/events/approval/stop operations. Every request uses `cache: "no-store"` and optional bearer authentication; there is no generic proxy, browser CORS requirement, arbitrary upstream path/method, raw upstream error body, API-key response, or session message-content response.
 
 Gateway health refreshes every 15 seconds; overview and session summaries every 30 seconds; skills and toolsets every 60 seconds. Manual refresh cancels stale requests, overlapping requests are prevented, and temporary failures retain the last successful data.
 
-Phase A maps only the exact Hermes aliases `verified-ai-radar` and `verified-content-studio`. Run execution is disabled and reserved for Phase B.
+AXION maps only the exact Hermes aliases `verified-ai-radar` and `verified-content-studio`. A run is enabled only when Hermes is online, run submission is advertised, and the matching alias is present in the latest `/v1/skills` response. The server repeats both trust and installation checks at submission time; the browser cannot select instructions, sessions, models, providers, tools, toolsets, commands, or paths.
+
+## Phase B run behavior
+
+- The user enters one 3–4000 character task and must choose **Confirm & Run**.
+- SSE from `/api/hermes/runs/{id}/events` is primary. If the connected Hermes version lacks SSE but supports status, AXION displays **Live updates unavailable** and polls normalized status.
+- Approval UI appears only when both approval response and approval events are advertised. AXION exposes only **Approve once** and **Deny**, translated to Hermes `{ "choice": "once" | "deny" }`.
+- Stop requests remain **Stopping** until Hermes reports `cancelled`.
+- Refresh recovery stores only run ID, trusted skill ID/name, and creation time. It never stores task text, output, approval payloads, tool data, or credentials and never restarts a task.
+
+Current Hermes versions should advertise `run_submission`, `run_status`, `run_events_sse`, `run_stop`, `run_approval_response`, and `approval_events` under `/v1/capabilities`. AXION also recognizes `run_approval` as an older equivalent capability name.
+
+For a safe manual check, start Hermes on its configured loopback URL, run `npm run dev`, choose an installed trusted skill, and submit a harmless read-only task. Verify browser network requests stay under `/api/hermes/`, refresh restores the drawer, and the browser bundle/payloads contain no `HERMES_API_KEY`. Use only a disposable harmless approval scenario; never test destructive commands.
 
 ## Quality commands
 
